@@ -1,6 +1,6 @@
 #include "All_Headers.h"
 
-float Filter(float *DesiredValue, Filter_params*F_P)
+float Filter(float *DesiredValue, F_params *F_P)
 {
 	
 	float InputError;

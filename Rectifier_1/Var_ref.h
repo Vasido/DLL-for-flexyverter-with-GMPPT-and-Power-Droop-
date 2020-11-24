@@ -1,9 +1,5 @@
 #ifndef VAR_REF_H
 #define VAR_REF_H
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 extern struct ADC_REGS	Adc;
 extern ADC_REGS*	ADC;
@@ -23,9 +19,7 @@ extern uint32_t TIM2_CNT;
 
 //extern 
 
-#ifdef __cplusplus
-}
-#endif
+
 
 
 

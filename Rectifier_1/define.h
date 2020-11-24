@@ -1,12 +1,6 @@
 #ifndef DEFINE_H
 #define DEFINE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
 #define SIGN		(int)0x8000
 #define SECTOR_0	2
 #define SECTOR_1	0
@@ -37,10 +31,5 @@ extern "C" {
 
 // для моделирования:
 #define Nmax 4500			 // период опорного сигнала
-
-#ifdef __cplusplus
-}
-#endif
-
 
 #endif

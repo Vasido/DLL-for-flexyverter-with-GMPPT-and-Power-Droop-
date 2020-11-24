@@ -10,27 +10,26 @@ double		temp_double;		// ¬спомогательна€ переменна€ дл€ моделировани€
 void TIM2_IRQHandler (double* in)
 {
 	
-	V_in = (float)in[1];
+	U_in = (float)in[1];
 	I_in = (float)in[2];
-	V_out = (float)in[3];
+	U_out = (float)in[3];
 	I_out = (float)in[4];
 	
-	Da_atan = (float)in[6];
-	SQRT = (float)in[7];
-	//V_in_ref= (float)in[5];
+	U_in_ref= (float)in[5];
 
 
 	
 
-	V_in_f = Filter(&V_in, &STR.V_in_fiter);
+	U_in_f = Filter(&U_in, &STR.U_in_fiter);
 	I_in_f = Filter(&I_in, &STR.I_in_fiter);
-	V_out_f = Filter(&V_out, &STR.V_out_fiter);
+	U_out_f = Filter(&U_out, &STR.U_out_fiter);
 	I_out_f = Filter(&I_out, &STR.I_out_fiter);
-	P_out = V_out_f * I_out_f;
+	P_out = U_out_f * I_out_f;
 	
+	Da = PI(&U_in_f, &U_in_ref, &U_in_reg[eConverterMode]);
+	
+	set_cmp_hrtm(in); 
 
-	transition_handler = FSM_table[machine_state].indicate_transition_handler;
-	transition_handler();//transition specific action taken from the transaction table
 }
 
 
