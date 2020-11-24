@@ -33,11 +33,11 @@ typedef struct
 //MAIN STRUCT
 typedef struct
 {
-	F_params		U_out_fiter;
-	F_params		U_in_fiter;
+	F_params		V_out_fiter;
+	F_params		V_in_fiter;
 	F_params		I_out_fiter;
 	F_params		I_in_fiter;
-	//stPI_Params		U_in_reg;
+	//stPI_Params		V_in_reg;
 
 	//PI_Params		P_los;
 	s16				w_ref;
@@ -89,6 +89,19 @@ typedef struct
 
 
 } HRTIM_Master;
+
+typedef void (*transition_callback)(void); //callback prototype
+//transition structure prototype
+struct transition
+{
+
+	transition_callback indicate_transition_handler;
+	//status current_status;
+};
+
+
+
+
 
 
 

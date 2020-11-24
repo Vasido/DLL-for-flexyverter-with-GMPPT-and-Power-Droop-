@@ -3,7 +3,7 @@
 #include "Var_def.h"
 
 
-void set_cmp_hrtm(double* in)
+void set_cmp_hrtm()
 {
 	static u16 charging_step_counter= 0;
 	static uint32_t charging_Duty_cycle = 0;
@@ -68,8 +68,8 @@ void set_cmp_hrtm(double* in)
 		if ((Da > 0.44))
 		{
 			eConverterMode = eBFBR_HBI_FBR;
-			U_in_reg[eConverterMode].flag_transition = 0;
-			U_in_reg[eConverterMode].Integral_Portion_Z = 0;
+			V_in_reg[eConverterMode].flag_transition = 0;
+			V_in_reg[eConverterMode].Integral_Portion_Z = 0;
 
 		}
 
@@ -108,36 +108,36 @@ void set_cmp_hrtm(double* in)
 		if (HRTIM1_TIMB.CMP4xR > T_hrtm)
 			HRTIM1_TIMB.CMP4xR = (u32)(T_hrtm - T_d);///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		
-		if (U_in_reg[eConverterMode].flag_transition == 1)
+		if (V_in_reg[eConverterMode].flag_transition == 1)
 		{
 			eConverterMode = eAPWM_HBI_FBR;
-			U_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
 		}
 		
 		
-		else if (U_in_ref < 0.12* U_out_f)
+		else if (V_in_ref < 0.12* V_out_f)
 		{
 			if (counter_Da_steps==0)
 			{
-				Da_temp_1 = U_in_ref * n * (2*Cr_fs * (U_in_ref * n - U_out_f) + I_out_f*0.5);
+				Da_temp_1 = V_in_ref * n * (2*Cr_fs * (V_in_ref * n - V_out_f) + I_out_f*0.5);
 				Da_temp_2 = Da_temp_1 / (Da_temp_1 - P_out);
 				Da_sqrt = Da_temp_2* Da_temp_2-1;
 				counter_Da_steps++;
 			}
 			else if (counter_Da_steps==1)
 			{
-				Da_atan = in[6];
+				//Da_atan = in[6];
 				counter_Da_steps++;
 				
 			}
 			else
 			{
 			
-					U_in_reg[ePSM_FBI_FBR].Integral_Portion_Z = wr_Ts * in[7];
+					V_in_reg[ePSM_FBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
 					charging_Da_buck = 0.5;
 					charging_Da_boost = Da;
 					charging_Duty_cycle = 0;
-					charging_Da_step_buck = (0.5 - (U_in_reg[ePSM_FBI_FBR].Integral_Portion_Z)) / Charging_N_C2;
+					charging_Da_step_buck = (0.5 - (V_in_reg[ePSM_FBI_FBR].Integral_Portion_Z)) / Charging_N_C2;
 					charging_Da_step_boost = charging_Da_boost / Charging_N_C2;
 					charging_step_counter = 0;
 					
@@ -174,7 +174,7 @@ void set_cmp_hrtm(double* in)
 			if(HRTIM1_TIMD.CMP4xR> T_hrtm)
 			HRTIM1_TIMD.CMP4xR = T_hrtm + MinCmpVal;
 
-			U_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * in[7];
+			V_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * SQRT;
 
 
 			//Switch Q3
@@ -186,13 +186,13 @@ void set_cmp_hrtm(double* in)
 			if (HRTIM1_TIMB.CMP4xR > T_hrtm)
 				HRTIM1_TIMB.CMP4xR = 0;///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		}
-		else if (U_in_reg[ePSM_FBI_FBR].flag_transition == 1)
+		else if (V_in_reg[ePSM_FBI_FBR].flag_transition == 1)
 			eConverterMode = eBFBR_HBI_FBR;
 
 		else
 		{
 			eConverterMode = ePSM_FBI_FBR;
-			U_in_reg[ePSM_FBI_FBR].flag_transition == 0;
+			V_in_reg[ePSM_FBI_FBR].flag_transition == 0;
 		}
 			
 		break;
@@ -234,26 +234,26 @@ void set_cmp_hrtm(double* in)
 		HRTIM1_TIMB.CMP4xR = 0x0;
 
 
-		if (U_in_ref > 0.123 * U_out_f)
+		if (V_in_ref > 0.123 * V_out_f)
 		{
 			if (counter_Da_steps == 0)
 			{
-				Da_temp_1 = U_in_f * n * Cr_fs * U_in_f * n  + P_out;
-				Da_temp_2 = Da_temp_1 / (Da_temp_1 - 2*P_out+ U_in_f * n* I_out_f);
+				Da_temp_1 = V_in_f * n * Cr_fs * V_in_f * n  + P_out;
+				Da_temp_2 = Da_temp_1 / (Da_temp_1 - 2*P_out+ V_in_f * n* I_out_f);
 				Da_sqrt = Da_temp_2 * Da_temp_2 - 1;
 				counter_Da_steps++;
 			}
 			else if (counter_Da_steps == 1)
 			{
-				Da_atan = in[6];
+				//Da_atan = in[6];
 				counter_Da_steps++;
 			}
 			else
 			{
-				U_in_reg[ePSM_FBI_FBR].flag_transition = 1;
+				V_in_reg[ePSM_FBI_FBR].flag_transition = 1;
 				charging_Da_buck = Da;
 				eConverterMode = eBFBR_HBI_PSM_FBI;
-				U_in_reg[eBFBR_HBI_FBR].Integral_Portion_Z = wr_Ts * in[7];
+				V_in_reg[eBFBR_HBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
 				counter_Da_steps = 0;
 
 				
@@ -263,7 +263,7 @@ void set_cmp_hrtm(double* in)
 				charging_duty_cycle_step = -un_charging_duty_cycle_step_C2;
 						
 				charging_Da_boost = 0;
-				charging_Da_step_boost = -(U_in_reg[eBFBR_HBI_FBR].Integral_Portion_Z) / Charging_N_C2;
+				charging_Da_step_boost = -(V_in_reg[eBFBR_HBI_FBR].Integral_Portion_Z) / Charging_N_C2;
 				charging_step_counter = 0;
 
 			}
@@ -272,8 +272,8 @@ void set_cmp_hrtm(double* in)
 		{
 
 			eConverterMode = eBFBR_FBI_FBR;
-			U_in_reg[eConverterMode].flag_transition = 0;			
-			U_in_reg[eConverterMode].Integral_Portion_Z = 0;
+			V_in_reg[eConverterMode].flag_transition = 0;			
+			V_in_reg[eConverterMode].Integral_Portion_Z = 0;
 		
 		}
 		break;
@@ -314,36 +314,36 @@ void set_cmp_hrtm(double* in)
 		
 
 
-		if (U_in_reg[eConverterMode].flag_transition == 1)
+		if (V_in_reg[eConverterMode].flag_transition == 1)
 		{
 			eConverterMode = ePSM_FBI_FBR;
-			U_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
 		}
 
 
-		else if (U_in_ref < 0.057 * U_out_f)
+		else if (V_in_ref < 0.057 * V_out_f)
 		{
 			if (counter_Da_steps == 0)
 			{
-				Da_temp_1 = U_in_ref * n * ( Cr_fs * (2 * U_in_ref * n - U_out_f) + I_out_f );
+				Da_temp_1 = V_in_ref * n * ( Cr_fs * (2 * V_in_ref * n - V_out_f) + I_out_f );
 				Da_temp_2 = Da_temp_1 / (Da_temp_1 - P_out);
 				Da_sqrt = Da_temp_2 * Da_temp_2 - 1;
 				counter_Da_steps++;
 			}
 			else if (counter_Da_steps == 1)
 			{
-				Da_atan = in[6];
+				//Da_atan = in[6];
 				counter_Da_steps++;
 			}
 			else
 			{
 
 
-				U_in_reg[ePSM_FBI_VDR].Integral_Portion_Z = wr_Ts * in[7];
+				V_in_reg[ePSM_FBI_VDR].Integral_Portion_Z = wr_Ts * SQRT;
 				charging_Da_buck = 0.5;
 				charging_Da_boost = Da;
 				charging_Duty_cycle = half_Thrtm;
-				charging_Da_step_buck = (0.5 - (U_in_reg[ePSM_FBI_VDR].Integral_Portion_Z)) / Charging_N_C3;
+				charging_Da_step_buck = (0.5 - (V_in_reg[ePSM_FBI_VDR].Integral_Portion_Z)) / Charging_N_C3;
 				charging_Da_step_boost = charging_Da_boost / Charging_N_C3;
 				charging_step_counter = 0;
 
@@ -380,7 +380,7 @@ void set_cmp_hrtm(double* in)
 			if (HRTIM1_TIMD.CMP4xR > T_hrtm)
 				HRTIM1_TIMD.CMP4xR = T_hrtm + MinCmpVal;
 
-			U_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * in[7];
+			V_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * SQRT;
 
 
 			//Switch Q3
@@ -394,13 +394,13 @@ void set_cmp_hrtm(double* in)
 			if (HRTIM1_TIMB.CMP4xR > T_hrtm)
 				HRTIM1_TIMB.CMP4xR = 0;///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		}
-		else if (U_in_reg[ePSM_FBI_VDR].flag_transition == 1)
+		else if (V_in_reg[ePSM_FBI_VDR].flag_transition == 1)
 			eConverterMode = eBFBR_FBI_FBR;
 
 		else
 		{
 			eConverterMode = ePSM_FBI_VDR;
-			U_in_reg[ePSM_FBI_VDR].flag_transition == 0;
+			V_in_reg[ePSM_FBI_VDR].flag_transition == 0;
 		}
 
 		break;
@@ -442,28 +442,28 @@ void set_cmp_hrtm(double* in)
 
 
 
-		if (U_in_ref > 0.059 * U_out_f)
+		if (V_in_ref > 0.059 * V_out_f)
 		{
 			if (counter_Da_steps == 0)
 			{
-				Da_temp_1 = 2*U_in_f * n * Cr_fs * U_in_f * n + 0.5 * P_out;
-				Da_temp_2 = Da_temp_1 / (Da_temp_1 - P_out + U_in_f * n * I_out_f);
+				Da_temp_1 = 2*V_in_f * n * Cr_fs * V_in_f * n + 0.5 * P_out;
+				Da_temp_2 = Da_temp_1 / (Da_temp_1 - P_out + V_in_f * n * I_out_f);
 				Da_sqrt = Da_temp_2 * Da_temp_2 - 1;
 				counter_Da_steps++;
 			}
 			else if (counter_Da_steps == 1)
 			{
-				Da_atan = in[6];
+				//Da_atan = in[6];
 				counter_Da_steps++;
 			}
 			else
 			{
 				
 
-				U_in_reg[ePSM_FBI_VDR].flag_transition = 1;
+				V_in_reg[ePSM_FBI_VDR].flag_transition = 1;
 				charging_Da_buck = Da;
 				eConverterMode = eBFBR_FBR_PSM_VDR;
-				U_in_reg[eBFBR_FBI_FBR].Integral_Portion_Z = wr_Ts * in[7];
+				V_in_reg[eBFBR_FBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
 				counter_Da_steps = 0;
 
 
@@ -473,7 +473,7 @@ void set_cmp_hrtm(double* in)
 				charging_duty_cycle_step = un_charging_duty_cycle_step_C3;
 
 				charging_Da_boost = 0;
-				charging_Da_step_boost = -(U_in_reg[eBFBR_FBI_FBR].Integral_Portion_Z) / Charging_N_C3;
+				charging_Da_step_boost = -(V_in_reg[eBFBR_FBI_FBR].Integral_Portion_Z) / Charging_N_C3;
 				charging_step_counter = 0;
 
 
@@ -482,9 +482,9 @@ void set_cmp_hrtm(double* in)
 		else if (Da > 0.44)
 		{
 			eConverterMode = eSwBVDR_FBI_VDR;
-			U_in_reg[eConverterMode].flag_transition = 0;
+			V_in_reg[eConverterMode].flag_transition = 0;
 
-			U_in_reg[eConverterMode].Integral_Portion_Z = 0;
+			V_in_reg[eConverterMode].Integral_Portion_Z = 0;
 
 		}
 		break;
@@ -522,10 +522,10 @@ void set_cmp_hrtm(double* in)
 		HRTIM1_TIMB.CMP4xR = T_hrtm + MinCmpVal;
 
 
-		if (U_in_reg[eConverterMode].flag_transition == 1)
+		if (V_in_reg[eConverterMode].flag_transition == 1)
 		{
 			eConverterMode = ePSM_FBI_VDR;
-			U_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
 		}
 
 		break;

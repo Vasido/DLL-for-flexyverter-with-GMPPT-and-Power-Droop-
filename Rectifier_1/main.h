@@ -39,19 +39,46 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
-typedef enum
+ enum et_converter_mode
 {
 	
-	eAPWM_HBI_FBR       =   0,
-	eBFBR_HBI_FBR       =   1,
-    eBFBR_HBI_PSM_FBI   =   2,
-	ePSM_FBI_FBR        =   3,
-    eBFBR_FBI_FBR       =   4,
-    eBFBR_FBR_PSM_VDR   =   5,
-	ePSM_FBI_VDR        =   6,
-    eSwBVDR_FBI_VDR     =   7,
+	eAPWM_HBI_FBR,
+	eBFBR_HBI_FBR,
+    eBFBR_HBI_PSM_FBI,
+	ePSM_FBI_FBR ,
+    eBFBR_FBI_FBR,
+    eBFBR_FBR_PSM_VDR,
+	ePSM_FBI_VDR,
+    eSwBVDR_FBI_VDR
 
-} et_converter_mode;
+} ;
+
+
+//state machine states enumerator
+ enum states
+{
+    Standby,
+    Start,
+    GMPPT,
+    LMPPT,
+    Power_droop,
+    Transition_operation_mode,
+    Stop_Reset
+
+};
+
+//state machine control signal states enumerator i.e. state vectors
+ enum status
+{
+    FAULT, //High input current 
+    READY,//waiting for normal operation input  and outpup volatge 10<Vin<60, 320<Vout<380
+    RUN,   //	GMPPT, 	LMPPT, Power_limitation
+};
+
+
+
+
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -88,25 +115,25 @@ extern float Da_atan; //
 
 extern et_converter_mode eConverterMode;
 
-extern float U_in;
+extern float V_in;
 extern float I_in;
-extern float U_out;
+extern float V_out;
 extern float I_out;
 
-extern float U_in_f;
+extern float V_in_f;
 extern float I_in_f;
-extern float U_out_f;
+extern float V_out_f;
 extern float I_out_f;
 
 extern float P_in;
 extern float P_out;
-extern float P_los;
-extern float P_los_old;
+extern float P_lim;
 
-extern float U_in_ref;
+extern float V_in_ref;
 
-extern stPI_Params U_in_reg[8];
+extern float global_temp;
 
+extern float SQRT;
 
 extern u32 ADC1ConvertedValues[2];
 extern u32 ADC2ConvertedValues[3];
@@ -114,10 +141,14 @@ extern u32 ADC2ConvertedValues[3];
 extern u32 I_in_offset;
 extern u32 I_out_offset;
 
+extern stPI_Params V_in_reg[8];
 extern u16 counter_2;
 extern u16 counter_Da_steps;
 
-
+extern states machine_state;
+extern status machine_status;
+extern transition_callback transition_handler;
+extern transition FSM_table[7];
 
 
 /* USER CODE END EFP */
@@ -137,7 +168,7 @@ extern u16 counter_Da_steps;
 
 #define U_in_adc_scale	(float)(0.0209) 	//
 #define I_in_adc_scale	(float)(0.00337)		//1/296
-#define U_out_adc_scale	(float)(0.209)	//615/100
+#define V_out_adc_scale	(float)(0.209)	//615/100
 #define I_out_adc_scale	(float)(0.001)		//
 
 
@@ -149,11 +180,19 @@ extern u16 counter_Da_steps;
 #define n	12 /// turns ratio of tranformer
 
 //Charging of series capasitors
-#define Charging_N_C2	(int)(18) //
-#define Charging_N_C3	(int)(6) //
+#define Charging_N_C2	(int)(18) // amout of time period for carging C2
+#define Charging_N_C3	(int)(6) //amout of time period for carging C3
 #define un_charging_duty_cycle_step_C2	(int)(half_Thrtm/Charging_N_C2) //
 #define un_charging_duty_cycle_step_C3	(int)(half_Thrtm/Charging_N_C3) //
 
+//Power droop control
+#define Max_converter_power	(float)(300) //W
+#define Min_V_out	        (float)(320) //V
+#define Min_Normal_V_out	    (float)(350) //V
+#define Normal_V_out	    (float)(350) //V
+#define Max_V_out	        (float)(380) //V
+#define Raising_power_K      (float)(Max_converter_power/(Min_Normal_V_out-Min_V_out)) //W/V
+#define Falling_power_K      (float)(Max_converter_power/(Max_V_out-Normal_V_out)) //W/V
 
 
 /* USER CODE END Private defines */

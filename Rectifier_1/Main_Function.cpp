@@ -18,28 +18,29 @@ float Da_sqrt = 0; //
 float Da_atan= 0; //
 
 
-float U_in = 0;
+float V_in = 0;
 float I_in = 0;
-float U_out = 0;
+float V_out = 0;
 float I_out = 0;
 
 
- float U_in_f=0;
+ float V_in_f=0;
  float I_in_f=0;
- float U_out_f=0;
+ float V_out_f=0;
  float I_out_f=0;
 
  float P_in=0;
  float P_out= 0;
- float P_los=10;
- float P_los_old = 10;
 
- float U_in_ref=35;
+ float P_lim = 0;
 
+ float V_in_ref=35;
 
+ float global_temp=0;
 
+ float SQRT = 0;
 
- stPI_Params U_in_reg[8] =
+ stPI_Params V_in_reg[8] =
  {//	Proportional_Gain,	Integral_Gain,	Integral_Portion_Z,	Integral_H_Limit,	Integral_L_Limit,	Output_H_Limit,		Output_L_Limit	flag_transition
 	 {	4.471e-3,			7.305e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//APWM_HBI_FBR
 	 {	4.471e-3,			7.305e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_HBI_FBR
@@ -76,10 +77,14 @@ HRTIM_TIMB HRTIM1_TIMB;
 HRTIM_Master HRTIM1_Master;
 STRUCT STR;
 
+/////////////////////////////
+
 
 
 et_converter_mode eConverterMode = eBFBR_HBI_FBR;
-
+states machine_state = Standby;
+status machine_status = READY;
+transition_callback transition_handler;
 
 void __declspec(dllexport) simuser (double t, double delt, double*in, double*out)
 {
@@ -87,13 +92,13 @@ void __declspec(dllexport) simuser (double t, double delt, double*in, double*out
 	TIM2_CNT = (u32)in[0];	// Ņåźółåå ēķą÷åķčå Ņąéģåšą 1
 	if (INIT < 1)
 	{
-		STR.U_out_fiter.IntegralGain = 0.0628; //f_filter 1 kHz f_interapt 100 kHz
-		STR.U_out_fiter.IntegralPortionK_1 = 350;
-		STR.U_out_fiter.OldValue = 350;
+		STR.V_out_fiter.IntegralGain = 0.0628; //f_filter 1 kHz f_interapt 100 kHz
+		STR.V_out_fiter.IntegralPortionK_1 = 350;
+		STR.V_out_fiter.OldValue = 350;
 
-		STR.U_in_fiter.IntegralGain = 0.6283;//f_filter 10 kHz f_interapt 100 kHz
-		STR.U_in_fiter.IntegralPortionK_1 = 0;
-		STR.U_in_fiter.OldValue = 0;
+		STR.V_in_fiter.IntegralGain = 0.6283;//f_filter 10 kHz f_interapt 100 kHz
+		STR.V_in_fiter.IntegralPortionK_1 = 0;
+		STR.V_in_fiter.OldValue = 0;
 
 		STR.I_in_fiter.IntegralGain = 0.0628; //f_filter 1 kHz f_interapt 100 kHz
 		STR.I_in_fiter.IntegralPortionK_1 = 0;
@@ -117,6 +122,24 @@ void __declspec(dllexport) simuser (double t, double delt, double*in, double*out
 		flag_INT = 1;  //óńņąķīāźą ōėąćą ļšåšūāąķč˙
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
+	//Power droop control
+	if ((V_out_f > Min_V_out) && (V_out_f < Min_Normal_V_out))
+		P_lim = (V_out_f - Min_V_out) * Raising_power_K;
+	else if ((V_out_f > Min_V_out) && ((V_out_f < Normal_V_out)))
+		P_lim = Max_converter_power;
+	else if ((V_out_f > Normal_V_out) && ((V_out_f < Max_V_out)))
+		P_lim = Max_converter_power- (V_out_f - Normal_V_out) * Falling_power_K;
+	else //Output voltage protection
+	{
+		machine_state = Stop_Reset;
+		machine_status = FAULT;
+	}
+
+	
+	
+
+
+
 
 	if ((in[8] > 30)&&(HRTIM_CNT==1))
 	{
@@ -159,17 +182,18 @@ void __declspec(dllexport) simuser (double t, double delt, double*in, double*out
 
 
 	//out[15] = flag_INT;
-	out[16] = U_in_f;
-	out[17] = 0;
-	out[18] = U_out_f;
-	out[19] = U_in;
-	out[20] = U_in_ref;
+	out[16] = V_in_f;
+	out[17] = machine_status;
+	out[18] = V_out_f;
+	out[19] = machine_state;
+	out[20] = V_in_ref;
 	out[21] = eConverterMode;
 	out[22] = Da;
 	if (Da_sqrt < 0)
 		Da_sqrt = 0;
 	out[23] = Da_sqrt;
 	out[24] = Da_atan;
+	
 	/*
 	out[9] = (double)STR.PI_Iq.Output;
 	out[10] = (double)STR.w_ref;

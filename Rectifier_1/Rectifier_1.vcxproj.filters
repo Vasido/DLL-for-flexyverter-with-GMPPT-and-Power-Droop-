@@ -38,6 +38,9 @@
     <ClCompile Include="Set_CMP_HRTM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="State machine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="table_sin.h">

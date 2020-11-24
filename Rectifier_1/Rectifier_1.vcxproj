@@ -153,6 +153,7 @@
     <ClCompile Include="Main_Function.cpp" />
     <ClCompile Include="Regulator.cpp" />
     <ClCompile Include="Set_CMP_HRTM.cpp" />
+    <ClCompile Include="State machine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="All_Headers.h" />
