@@ -1,0 +1,5 @@
+LIBRARY "SRC v1"
+DESCRIPTION  'Test DLL Block For PSIM'
+
+EXPORTS
+	simuser
