@@ -1,6 +1,10 @@
 #ifndef VAR_DEF_H
 #define VAR_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 //static 
 
@@ -18,5 +22,9 @@ static double K_time_op_per=0.; // ¬спомогательна€ переменна€ дл€ дискретизации 
 static	int	  INIT = 0;			// ¬спомогательна€ переменна€ дл€ инициализации данных
 static	int	  flag_INT = 1;		// ѕеременна€ дл€ формировани€ дискретности по времени
 //STRUCT STR;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

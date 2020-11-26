@@ -20,19 +20,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Init_Data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Interrupts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Filters.cpp">
+    <ClCompile Include="Main_Function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Regulator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Main_Function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Set_CMP_HRTM.cpp">

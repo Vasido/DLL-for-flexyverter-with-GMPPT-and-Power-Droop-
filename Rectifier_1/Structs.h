@@ -1,13 +1,16 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //FILTER PARAMETERS
 typedef struct {
 	f32 OldValue;
 	f32 IntegralGain;
 	f32 IntegralPortionK_1;
-} F_params;
+} Filter_params;
 
 
 //PI CONTROLLER PARAMETERS
@@ -33,10 +36,10 @@ typedef struct
 //MAIN STRUCT
 typedef struct
 {
-	F_params		V_out_fiter;
-	F_params		V_in_fiter;
-	F_params		I_out_fiter;
-	F_params		I_in_fiter;
+	Filter_params		V_out_fiter;
+	Filter_params		V_in_fiter;
+	Filter_params		I_out_fiter;
+	Filter_params		I_in_fiter;
 	//stPI_Params		V_in_reg;
 
 	//PI_Params		P_los;
@@ -48,44 +51,44 @@ typedef struct
 
 typedef struct
 {
-	u32 CMP1xR=0;
-	u32 CMP2xR=0;
-	u32 CMP3xR=0;
-	u32 CMP4xR=0;
+	u32 CMP1xR;
+	u32 CMP2xR;
+	u32 CMP3xR;
+	u32 CMP4xR;
 
 } HRTIM_TIMC;
 
 typedef struct
 {
-	u32 CMP1xR=0;
-	u32 CMP2xR=0;
-	u32 CMP3xR=0;
-	u32 CMP4xR=0;
+	u32 CMP1xR;
+	u32 CMP2xR;
+	u32 CMP3xR;
+	u32 CMP4xR;
 
 } HRTIM_TIMD;
 
 typedef struct
 {
-	u32 CMP1xR=0;
-	u32 CMP2xR=0;
-	u32 CMP3xR=0;
-	u32 CMP4xR=0;
+	u32 CMP1xR;
+	u32 CMP2xR;
+	u32 CMP3xR;
+	u32 CMP4xR;
 
 } HRTIM_TIMA;
 
 typedef struct
 {
-	u32 CMP1xR=0;
-	u32 CMP2xR=0;
-	u32 CMP3xR=0;
-	u32 CMP4xR=0;
+	u32 CMP1xR;
+	u32 CMP2xR;
+	u32 CMP3xR;
+	u32 CMP4xR;
 
 } HRTIM_TIMB;
 
 typedef struct
 {
-	u32 MCMP1R=0;
-	u32 MCMP2R=0;
+	u32 MCMP1R;
+	u32 MCMP2R;
 
 
 } HRTIM_Master;
@@ -102,6 +105,9 @@ struct transition
 
 
 
+#ifdef __cplusplus
+}
+#endif
 
 
 

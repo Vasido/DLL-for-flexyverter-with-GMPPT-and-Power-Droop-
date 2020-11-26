@@ -6,12 +6,12 @@
 void set_cmp_hrtm()
 {
 	static u16 charging_step_counter= 0;
-	static uint32_t charging_Duty_cycle = 0;
-	static float charging_Da_buck = 0.5;
+	static uint32_t charging_Duty_cycle = half_Thrtm;
+	//static float charging_Da_buck = 0.5;
 	static float charging_Da_step_buck = 0;
 	static float charging_Da_boost = 0;
 	static float charging_Da_step_boost = 0;
-	static int charging_duty_cycle_step=0;
+	//static int charging_duty_cycle_step=0;
 
 	delta_Da = t_d * f_sw_M;
 	Max_Da = 0.5 - delta_Da;
@@ -110,8 +110,14 @@ void set_cmp_hrtm()
 		
 		if (V_in_reg[eConverterMode].flag_transition == 1)
 		{
-			eConverterMode = eAPWM_HBI_FBR;
-			V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			if (V_in_ref > 0.163 * V_out_f)//0.163 * 350=57 V
+			{
+				eConverterMode = eAPWM_HBI_FBR;
+				V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			}
+			else
+				V_in_reg[eConverterMode].flag_transition = 0;
+
 		}
 		
 		
@@ -132,7 +138,7 @@ void set_cmp_hrtm()
 			}
 			else
 			{
-			
+					V_in_reg[eConverterMode].flag_transition = 1;
 					V_in_reg[ePSM_FBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
 					charging_Da_buck = 0.5;
 					charging_Da_boost = Da;
@@ -144,6 +150,10 @@ void set_cmp_hrtm()
 					charging_duty_cycle_step = un_charging_duty_cycle_step_C2;
 					counter_Da_steps = 0;
 					eConverterMode = eBFBR_HBI_PSM_FBI;
+
+					//Waiting for transion input and output voltage
+					prev_machine_state = machine_state;
+					machine_state = Transition_operation_mode;
 
 			}
 				
@@ -168,11 +178,14 @@ void set_cmp_hrtm()
 			//Switch S3
 			HRTIM1_TIMD.CMP1xR = (u32)(charging_Da_buck * T_hrtm);
 			HRTIM1_TIMD.CMP2xR = (u32)(charging_Da_buck * T_hrtm + charging_Duty_cycle - T_d);
+			if (HRTIM1_TIMD.CMP2xR > T_hrtm)
+				HRTIM1_TIMD.CMP2xR = 0 ;
+
 			//Switch S4
 			HRTIM1_TIMD.CMP3xR = (u32)(charging_Da_buck * T_hrtm + charging_Duty_cycle);
 			HRTIM1_TIMD.CMP4xR = (u32)(charging_Da_buck * T_hrtm - T_d);
 			if(HRTIM1_TIMD.CMP4xR> T_hrtm)
-			HRTIM1_TIMD.CMP4xR = T_hrtm + MinCmpVal;
+			HRTIM1_TIMD.CMP4xR = T_hrtm - T_d;
 
 			V_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * SQRT;
 
@@ -187,14 +200,18 @@ void set_cmp_hrtm()
 				HRTIM1_TIMB.CMP4xR = 0;///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		}
 		else if (V_in_reg[ePSM_FBI_FBR].flag_transition == 1)
-			eConverterMode = eBFBR_HBI_FBR;
-
-		else
 		{
-			eConverterMode = ePSM_FBI_FBR;
-			V_in_reg[ePSM_FBI_FBR].flag_transition == 0;
+			V_in_reg[ePSM_FBI_FBR].flag_transition = 0;
+			eConverterMode = eBFBR_HBI_FBR;
 		}
 			
+		
+		else 
+		{
+			eConverterMode = ePSM_FBI_FBR;
+			V_in_reg[ePSM_FBI_FBR].flag_transition = 0;
+		}
+
 		break;
 
 
@@ -253,6 +270,8 @@ void set_cmp_hrtm()
 				V_in_reg[ePSM_FBI_FBR].flag_transition = 1;
 				charging_Da_buck = Da;
 				eConverterMode = eBFBR_HBI_PSM_FBI;
+
+
 				V_in_reg[eBFBR_HBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
 				counter_Da_steps = 0;
 
@@ -266,6 +285,9 @@ void set_cmp_hrtm()
 				charging_Da_step_boost = -(V_in_reg[eBFBR_HBI_FBR].Integral_Portion_Z) / Charging_N_C2;
 				charging_step_counter = 0;
 
+				//Waiting for transion input and output voltage
+				prev_machine_state = machine_state;
+				machine_state = Transition_operation_mode;
 			}
 		}
 		else if (Da > 0.44)
@@ -316,8 +338,11 @@ void set_cmp_hrtm()
 
 		if (V_in_reg[eConverterMode].flag_transition == 1)
 		{
-			eConverterMode = ePSM_FBI_FBR;
-			V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			if (V_in_ref > 0.077 * V_out_f)//0.077 * 350=27 V
+			{
+				eConverterMode = ePSM_FBI_FBR;
+				V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			}
 		}
 
 
@@ -338,7 +363,7 @@ void set_cmp_hrtm()
 			else
 			{
 
-
+				V_in_reg[eConverterMode].flag_transition = 1;
 				V_in_reg[ePSM_FBI_VDR].Integral_Portion_Z = wr_Ts * SQRT;
 				charging_Da_buck = 0.5;
 				charging_Da_boost = Da;
@@ -350,6 +375,10 @@ void set_cmp_hrtm()
 				charging_duty_cycle_step = -un_charging_duty_cycle_step_C3;
 				counter_Da_steps = 0;
 				eConverterMode = eBFBR_FBR_PSM_VDR;
+
+				//Waiting for transion input and output voltage
+				prev_machine_state = machine_state;
+				machine_state = Transition_operation_mode;
 
 			}
 
@@ -378,7 +407,7 @@ void set_cmp_hrtm()
 			HRTIM1_TIMD.CMP3xR = (u32)(charging_Da_buck * T_hrtm + half_Thrtm);
 			HRTIM1_TIMD.CMP4xR = (u32)(charging_Da_buck * T_hrtm - T_d);
 			if (HRTIM1_TIMD.CMP4xR > T_hrtm)
-				HRTIM1_TIMD.CMP4xR = T_hrtm + MinCmpVal;
+				HRTIM1_TIMD.CMP4xR = T_hrtm - T_d;
 
 			V_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * SQRT;
 
@@ -395,13 +424,19 @@ void set_cmp_hrtm()
 				HRTIM1_TIMB.CMP4xR = 0;///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		}
 		else if (V_in_reg[ePSM_FBI_VDR].flag_transition == 1)
+		{
+			V_in_reg[ePSM_FBI_VDR].flag_transition = 0;
 			eConverterMode = eBFBR_FBI_FBR;
+		}			
 
-		else
+		else if (V_in_reg[eBFBR_FBI_FBR].flag_transition == 1)
 		{
 			eConverterMode = ePSM_FBI_VDR;
-			V_in_reg[ePSM_FBI_VDR].flag_transition == 0;
+			V_in_reg[ePSM_FBI_VDR].flag_transition = 0;
+			V_in_reg[eBFBR_FBI_FBR].flag_transition = 0;
 		}
+		else 
+			eConverterMode = eSwBVDR_FBI_VDR;
 
 		break;
 
@@ -476,6 +511,10 @@ void set_cmp_hrtm()
 				charging_Da_step_boost = -(V_in_reg[eBFBR_FBI_FBR].Integral_Portion_Z) / Charging_N_C3;
 				charging_step_counter = 0;
 
+				//Waiting for transion input and output voltage
+				prev_machine_state = machine_state;
+				machine_state = Transition_operation_mode;
+
 
 			}
 		}
@@ -524,8 +563,11 @@ void set_cmp_hrtm()
 
 		if (V_in_reg[eConverterMode].flag_transition == 1)
 		{
-			eConverterMode = ePSM_FBI_VDR;
-			V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			if (V_in_ref > 0.037 * V_out_f)//0.037 * 350=13 V
+			{
+				eConverterMode = ePSM_FBI_VDR;
+				V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
+			}
 		}
 
 		break;

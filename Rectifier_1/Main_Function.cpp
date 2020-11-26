@@ -29,14 +29,19 @@ float I_out = 0;
  float V_out_f=0;
  float I_out_f=0;
 
+ float V_in_old = 0;
+
  float P_in=0;
  float P_out= 0;
 
  float P_lim = 0;
 
- float V_in_ref=35;
+ float V_in_ref=0;
 
  float global_temp=0;
+
+ int charging_duty_cycle_step=0;
+ float charging_Da_buck = 0;
 
  float SQRT = 0;
 
@@ -81,14 +86,15 @@ STRUCT STR;
 
 
 
-et_converter_mode eConverterMode = eBFBR_HBI_FBR;
+et_converter_mode eConverterMode = eAPWM_HBI_FBR;
 states machine_state = Standby;
+states prev_machine_state = Standby; //previously 
 status machine_status = READY;
 transition_callback transition_handler;
 
-void __declspec(dllexport) simuser (double t, double delt, double*in, double*out)
+void __declspec(dllexport) simuser(double t, double delt, double* in, double* out)
 {
-	
+
 	TIM2_CNT = (u32)in[0];	// Ņåźółåå ēķą÷åķčå Ņąéģåšą 1
 	if (INIT < 1)
 	{
@@ -110,30 +116,75 @@ void __declspec(dllexport) simuser (double t, double delt, double*in, double*out
 
 		INIT++;
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////////////////////////
 	//--ōīšģčšīāąķčå äčńźšåņķīńņč: --------------------------------
-	if((TIM2_CNT > 50) && (flag_INT == 1))
+	if ((TIM2_CNT > 50) && (flag_INT == 1))
 	{
 		flag_INT = 0; //ńįšīń ōėąćą ļšåšūāąķč˙
 		TIM2_IRQHandler(in);	// Īįšąįīņźą ļšåšūāąķč˙ īņ Ņąéģåšą
 	}
-	if(TIM2_CNT < 50)
+	if (TIM2_CNT < 50)
 		flag_INT = 1;  //óńņąķīāźą ōėąćą ļšåšūāąķč˙
 	//////////////////////////////////////////////////////////////////////////////////////////
-	
-	//Power droop control
-	if ((V_out_f > Min_V_out) && (V_out_f < Min_Normal_V_out))
-		P_lim = (V_out_f - Min_V_out) * Raising_power_K;
-	else if ((V_out_f > Min_V_out) && ((V_out_f < Normal_V_out)))
-		P_lim = Max_converter_power;
-	else if ((V_out_f > Normal_V_out) && ((V_out_f < Max_V_out)))
-		P_lim = Max_converter_power- (V_out_f - Normal_V_out) * Falling_power_K;
-	else //Output voltage protection
+
+	if (machine_status != FAULT)
 	{
-		machine_state = Stop_Reset;
-		machine_status = FAULT;
+		if (I_in > 13)
+		{
+			machine_state = Stop_Reset;
+			machine_status = FAULT;
+		}
+		else
+		{
+			//Input voltage protection	
+			if ((V_in_f > Min_V_in) && (V_in_f < Max_V_in))
+			{
+
+				//Power droop control
+				if ((V_out_f > Min_V_out) && (V_out_f < Min_Normal_V_out))
+				{
+					machine_status = RUN;
+					P_lim = (V_out_f - Min_V_out) * Raising_power_K;
+				}
+				else if ((V_out_f >= Min_V_out) && ((V_out_f <= Normal_V_out)))
+				{
+					machine_status = RUN;
+					P_lim = Max_converter_power;
+				}
+
+				else if ((V_out_f > Normal_V_out) && ((V_out_f < Max_V_out)))
+				{
+					machine_status = RUN;
+					P_lim = Max_converter_power - (V_out_f - Normal_V_out) * Falling_power_K;
+				}
+
+				//Output voltage protection	
+				else
+				{
+					if (machine_status == RUN)
+					{
+						machine_state = Stop_Reset;
+						machine_status = FAULT_V_out;
+					}
+				}
+			}
+			else
+			{
+				if (machine_status == RUN)
+				{
+					machine_state = Stop_Reset;
+					machine_status = FAULT_V_in;
+				}
+			}
+
+		}
 	}
+
+
+
+
+
 
 	
 	
@@ -182,11 +233,11 @@ void __declspec(dllexport) simuser (double t, double delt, double*in, double*out
 
 
 	//out[15] = flag_INT;
-	out[16] = V_in_f;
+	out[16] = machine_state;
 	out[17] = machine_status;
-	out[18] = V_out_f;
-	out[19] = machine_state;
-	out[20] = V_in_ref;
+	out[18] = V_in_ref;
+	out[19] = V_in_f;
+	out[20] = V_out_f;
 	out[21] = eConverterMode;
 	out[22] = Da;
 	if (Da_sqrt < 0)

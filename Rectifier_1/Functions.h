@@ -1,9 +1,12 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 void TIM2_IRQHandler(double*);
-float Filter(float* , F_params*);
+float Filter(float* , Filter_params*);
 float PI(float*, float*, stPI_Params*);
 void set_cmp_hrtm();
 
@@ -17,7 +20,9 @@ void fnc_lmppt(void);
 void fnc_power_droop(void);
 void fnc_transition_opeation_mode(void);
 void fnc_stop_reset(void);
-
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif
