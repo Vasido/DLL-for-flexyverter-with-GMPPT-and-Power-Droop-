@@ -125,14 +125,72 @@ void fnc_start(void)
 //GMPPT		global maximum power point tracking
 void fnc_gmppt(void)
 {
-	if (V_in_ref > Min_V_in)
+	static u16 P_diff_sign = 0; // if (P_out-P_out_old)>0 then P_diff_sign=0
+	static u16 GMPPT_counter = 0;
+	static u16 i = 0;
+	static u16 GMPP_i = 0;
+	//Power droop control
+	if (P_out < P_lim)
 	{
-		Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
-		set_cmp_hrtm();
-		V_in_ref -= V_ref_step;
+		if ((V_in_ref > Min_V_in) && (i != 10))
+		{
+			if (GMPPT_counter == 40)
+			{
+				// if derivative of Power < 0 then P_diff_sign=1. 
+				if (((P_out - P_out_old) < -0.2) && (P_diff_sign == 0))
+				{
+					P_diff_sign = 1;
+					GMPPs_P_out[i] = P_out_old;	//Save Global maximum power points
+					GMPPs_V_in[i] = V_in_ref;
+					i++;
+
+				}
+				// if derivative of Power > 0 then P_diff_sign=0. 
+				if (((P_out - P_out_old) > 0.2) && (P_diff_sign == 1))
+				{
+					P_diff_sign = 0;
+				}
+
+				P_out_old = P_out;
+				GMPPT_counter = 0;
+
+			}
+			else
+				GMPPT_counter++;
+
+			Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
+			set_cmp_hrtm();
+			V_in_ref -= V_ref_step;
+
+
+
+		}
+		else
+		{	///Finding out of Gloval Maximum power poit
+			
+			for (i = 1; i < 10; i++)
+			{
+				if (GMPPs_P_out[GMPP_i] < GMPPs_P_out[i])
+					GMPP_i = i;
+			}
+			V_in_ref = GMPPs_V_in[GMPP_i];
+			GMPPs_P_out[0] = GMPPs_P_out[GMPP_i];
+			GMPP_i = 0;
+
+			i = 0;
+			machine_state = LMPPT;
+		}
 	}
 	else
-		machine_state = LMPPT;
+	{
+		V_in_ref -= V_ref_step;
+		GMPP_i = 0;
+		i = 0;
+		machine_state = Power_droop;
+	}
+		
+
+		
 
 
 
@@ -140,14 +198,16 @@ void fnc_gmppt(void)
 //LMPPT		local maximum power point tracking
 void fnc_lmppt(void)
 {
-
+	Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
+	set_cmp_hrtm();
 
 }
 
 //Power_droop based on output voltage. Funtion of power droop control is described in the main 
 void fnc_power_droop(void)
 {
-
+	Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
+	set_cmp_hrtm();
 
 }
 
@@ -187,7 +247,7 @@ void fnc_stop_reset(void)
 	HRTIM1_TIMD.CMP1xR = 0x0;
 	HRTIM1_TIMD.CMP2xR = 0x0;
 	//Switch S4
-	HRTIM1_TIMD.CMP3xR = 0x0;
+	HRTIM1_TIMD.CMP3xR = T_hrtm + MinCmpVal;
 	HRTIM1_TIMD.CMP4xR = 0x0;
 
 	// Output bridge

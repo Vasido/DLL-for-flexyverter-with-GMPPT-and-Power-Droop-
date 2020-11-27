@@ -31,9 +31,13 @@ float I_out = 0;
 
  float V_in_old = 0;
 
+ //GMPPT
  float P_in=0;
  float P_out= 0;
-
+ float P_out_old = 0;
+ float GMPPs_P_out[10] = { 0 };
+ float GMPPs_V_in[10] = { 0 };
+ ///
  float P_lim = 0;
 
  float V_in_ref=0;
@@ -138,7 +142,7 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 		else
 		{
 			//Input voltage protection	
-			if ((V_in_f > Min_V_in) && (V_in_f < Max_V_in))
+			if ((V_in_f > Min_V_in_fault) && (V_in_f < Max_V_in))
 			{
 
 				//Power droop control
@@ -236,12 +240,12 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[16] = machine_state;
 	out[17] = machine_status;
 	out[18] = V_in_ref;
-	out[19] = V_in_f;
-	out[20] = V_out_f;
-	out[21] = eConverterMode;
+	out[19] = GMPPs_P_out[0];
+	out[20] = P_out;
+	out[21] = P_lim;
 	out[22] = Da;
 	if (Da_sqrt < 0)
-		Da_sqrt = 0;
+		Da_sqrt = 0; 
 	out[23] = Da_sqrt;
 	out[24] = Da_atan;
 	

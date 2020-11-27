@@ -128,8 +128,16 @@ extern float V_out_f;
 extern float I_out_f;
 
 extern float V_in_old;
+
+/// GMPPT
 extern float P_in;
 extern float P_out;
+extern float P_out_old;
+extern float GMPPs_P_out[10];
+extern float GMPPs_V_in[10];
+/// 
+
+
 extern float P_lim;
 
 extern float V_in_ref;
@@ -214,6 +222,7 @@ extern transition FSM_table[7];
 
 #define Max_V_in	(float)(75) //W
 #define Min_V_in    (float)(10) //V
+#define Min_V_in_fault    (float)(8) //V
 
 //fnc Start
 #define T_start	(u16)(1+(f_interupt*5)/(2*3.141592*f_filter_cutoff_V_out)) //
@@ -224,7 +233,7 @@ extern transition FSM_table[7];
 
 
 //fnc fnc_transition_opeation_mode
-#define T_transition    (u16)(Charging_N_C2*3) //
+#define T_transition    (u16)(Charging_N_C2*4) //
 
 /* USER CODE END Private defines */
 
