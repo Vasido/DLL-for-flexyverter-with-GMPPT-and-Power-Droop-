@@ -37,7 +37,12 @@ float I_out = 0;
  float P_out_old = 0;
  float GMPPs_P_out[10] = { 0 };
  float GMPPs_V_in[10] = { 0 };
+ u16 GMPP_i = 0;
  ///
+ ///LMPPT
+ float V_in_ref_LPPT = 0;
+ ////
+
  float P_lim = 0;
 
  float V_in_ref=0;
@@ -62,7 +67,10 @@ float I_out = 0;
  };
 
 
-
+ stPI_Params P_out_reg =
+ {//	Proportional_Gain,	Integral_Gain,	Integral_Portion_Z,	Integral_H_Limit,	Integral_L_Limit,	Output_H_Limit,		Output_L_Limit	flag_transition
+  		2e-3,				1.254e-4,		0,					Max_V_in,			Min_V_in,			Max_V_in,			Min_V_in,				0
+ };
 
 
  u16 counter_Da_steps = 0;
@@ -172,6 +180,17 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 						machine_status = FAULT_V_out;
 					}
 				}
+
+				if (((machine_state == GMPPT) || (machine_state == LMPPT)) && (P_out > P_lim))
+				{
+					V_in_ref += V_ref_step;
+					GMPP_i = 0;
+					P_out_reg.Integral_Portion_Z = V_in_ref;
+					machine_state = Power_droop;
+
+				}
+
+
 			}
 			else
 			{
@@ -240,7 +259,7 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[16] = machine_state;
 	out[17] = machine_status;
 	out[18] = V_in_ref;
-	out[19] = GMPPs_P_out[0];
+	out[19] = P_out_old;
 	out[20] = P_out;
 	out[21] = P_lim;
 	out[22] = Da;

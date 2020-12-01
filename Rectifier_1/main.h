@@ -63,8 +63,8 @@ extern "C" {
     LMPPT,
     Power_droop,
     Transition_operation_mode,
-    Stop_Reset
-
+    Stop_Reset,
+    Transit_to_LMPPT
 };
 
 //state machine control signal states enumerator i.e. state vectors
@@ -135,8 +135,13 @@ extern float P_out;
 extern float P_out_old;
 extern float GMPPs_P_out[10];
 extern float GMPPs_V_in[10];
+extern u16 GMPP_i;
+extern stPI_Params P_out_reg;
 /// 
 
+ ///LMPPT
+extern float V_in_ref_LPPT ;
+////
 
 extern float P_lim;
 
@@ -164,7 +169,7 @@ extern states prev_machine_state;
 extern status machine_status;
 
 extern transition_callback transition_handler;
-extern transition FSM_table[7];
+extern transition FSM_table[8];
 
 
 /* USER CODE END EFP */
@@ -230,7 +235,7 @@ extern transition FSM_table[7];
 //fnc GMPPT
 #define V_ref_freq	(float)(100) //Hz
 #define V_ref_step	(float)((V_ref_freq*2*3.151592)/(f_interupt)) //
-
+#define V_ref_step_N    (float)(V_ref_step*20)
 
 //fnc fnc_transition_opeation_mode
 #define T_transition    (u16)(Charging_N_C2*4) //

@@ -11,7 +11,7 @@
 
 
 //transition table
-transition FSM_table[7] = {//[state][transient vector]
+transition FSM_table[8] = {//[state][transient vector]
 
 	   {fnc_standby},					//Standby
 	   {fnc_start},						//Start		Waiting for Stabilization of input and output voltage filters
@@ -20,6 +20,7 @@ transition FSM_table[7] = {//[state][transient vector]
 	   {fnc_power_droop},				//Power_droop based on output voltage
 	   {fnc_transition_opeation_mode},	//Transition_operation_mode		stop all regulators in eBFBR_HBI_PSM_FBI and eBFBR_FBR_PSM_VDR modes
 	   {fnc_stop_reset},				//Stop_Reset regulators and GMPP
+	   {fnc_transit_to_LMPPT},			//Transit_to_LMPPT Transitiof from GMPPT to LPPPT
 };
 
 
@@ -43,7 +44,7 @@ void fnc_start(void)
 {
 	static u16 start_counter = 0;
 
-	if (start_counter != 7)
+	if (start_counter != 20)
 	{
 		start_counter++;
 	}
@@ -128,21 +129,20 @@ void fnc_gmppt(void)
 	static u16 P_diff_sign = 0; // if (P_out-P_out_old)>0 then P_diff_sign=0
 	static u16 GMPPT_counter = 0;
 	static u16 i = 0;
-	static u16 GMPP_i = 0;
+	//static u16 GMPP_i = 0;
 	//Power droop control
-	if (P_out < P_lim)
-	{
-		if ((V_in_ref > Min_V_in) && (i != 10))
+	
+		if ((V_in_ref > Min_V_in) && (GMPP_i != 10))
 		{
-			if (GMPPT_counter == 40)
+			if (GMPPT_counter == 20)
 			{
 				// if derivative of Power < 0 then P_diff_sign=1. 
 				if (((P_out - P_out_old) < -0.2) && (P_diff_sign == 0))
 				{
 					P_diff_sign = 1;
-					GMPPs_P_out[i] = P_out_old;	//Save Global maximum power points
-					GMPPs_V_in[i] = V_in_ref;
-					i++;
+					GMPPs_P_out[GMPP_i] = P_out_old;	//Save Global maximum power points
+					GMPPs_V_in[GMPP_i] = V_in_ref+ V_ref_step_N;
+					GMPP_i++;
 
 				}
 				// if derivative of Power > 0 then P_diff_sign=0. 
@@ -167,47 +167,66 @@ void fnc_gmppt(void)
 		}
 		else
 		{	///Finding out of Gloval Maximum power poit
-			
+			GMPP_i = 0;
 			for (i = 1; i < 10; i++)
 			{
 				if (GMPPs_P_out[GMPP_i] < GMPPs_P_out[i])
 					GMPP_i = i;
 			}
-			V_in_ref = GMPPs_V_in[GMPP_i];
+			V_in_ref_LPPT = GMPPs_V_in[GMPP_i];
 			GMPPs_P_out[0] = GMPPs_P_out[GMPP_i];
 			GMPP_i = 0;
 
 			i = 0;
-			machine_state = LMPPT;
+			machine_state = Transit_to_LMPPT;
+
 		}
-	}
+}
+
+void fnc_transit_to_LMPPT(void)//Transitiof from GMPPT to LPPPT
+{
+
+	if (V_in_ref < V_in_ref_LPPT)
+		V_in_ref += V_ref_step;
 	else
 	{
-		V_in_ref -= V_ref_step;
-		GMPP_i = 0;
-		i = 0;
-		machine_state = Power_droop;
+		machine_state = LMPPT;
+		P_out_reg.Integral_Portion_Z = V_in_ref_LPPT;
 	}
-		
-
-		
-
-
-
+	Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
+	set_cmp_hrtm();
 }
+
+
 //LMPPT		local maximum power point tracking
 void fnc_lmppt(void)
 {
-	Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
-	set_cmp_hrtm();
+	static u16 LMPPT_counter = 0;
 
+	if (LMPPT_counter == 10)
+	{
+		V_in_ref = PI(&P_out_old, &P_out, &P_out_reg);
+		Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
+		set_cmp_hrtm();
+		P_out_old = P_out;
+		LMPPT_counter = 0;
+	}
+	else
+		LMPPT_counter++;
 }
 
 //Power_droop based on output voltage. Funtion of power droop control is described in the main 
 void fnc_power_droop(void)
 {
+	
+	V_in_ref = PI(&P_out, &P_lim, &P_out_reg);
 	Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
 	set_cmp_hrtm();
+	if (((P_out - P_lim) > 20) || ((P_out - P_lim) < -20))
+	{
+		machine_state = Stop_Reset;
+		machine_status = READY;
+	}
 
 }
 
@@ -279,5 +298,8 @@ void fnc_stop_reset(void)
 	V_in_reg[ePSM_FBI_VDR].Integral_Portion_Z = 0;
 	V_in_reg[eSwBVDR_FBI_VDR].Integral_Portion_Z = 0;
 
+	P_out_reg.Integral_Portion_Z = 0;
+
 	machine_state = Standby;
 }
+
