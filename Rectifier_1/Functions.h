@@ -21,6 +21,8 @@ void fnc_power_droop(void);
 void fnc_transition_opeation_mode(void);
 void fnc_stop_reset(void);
 void fnc_transit_to_LMPPT(void);
+void  fnc_new_method_GMPPT(void);
+
 #ifdef __cplusplus
 }
 #endif

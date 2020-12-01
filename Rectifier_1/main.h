@@ -64,7 +64,8 @@ extern "C" {
     Power_droop,
     Transition_operation_mode,
     Stop_Reset,
-    Transit_to_LMPPT
+    Transit_to_LMPPT,
+    new_GMPPT
 };
 
 //state machine control signal states enumerator i.e. state vectors
@@ -139,12 +140,17 @@ extern u16 GMPP_i;
 extern stPI_Params P_out_reg;
 /// 
 
+//New GMPPT
+extern float V_PV_oc;
+///
+
  ///LMPPT
 extern float V_in_ref_LPPT ;
 ////
 
+///Power Droop Control
 extern float P_lim;
-
+///
 extern float V_in_ref;
 
 extern float global_temp;
@@ -169,7 +175,7 @@ extern states prev_machine_state;
 extern status machine_status;
 
 extern transition_callback transition_handler;
-extern transition FSM_table[8];
+extern transition FSM_table[9];
 
 
 /* USER CODE END EFP */

@@ -43,7 +43,15 @@ float I_out = 0;
  float V_in_ref_LPPT = 0;
  ////
 
+
+ ///Power droop control
  float P_lim = 0;
+ ///
+
+ //New GMPPT
+ float V_PV_oc = 0;// open circuit of PV
+
+ ////
 
  float V_in_ref=0;
 
