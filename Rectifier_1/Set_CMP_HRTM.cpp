@@ -251,7 +251,7 @@ void set_cmp_hrtm()
 		HRTIM1_TIMB.CMP4xR = 0x0;
 
 
-		if (V_in_ref > 0.123 * V_out_f)
+		/*if (V_in_ref > 0.123 * V_out_f)
 		{
 			if (counter_Da_steps == 0)
 			{
@@ -290,7 +290,7 @@ void set_cmp_hrtm()
 				machine_state = Transition_operation_mode;
 			}
 		}
-		else if (Da > 0.44)
+		else*/ if (Da > 0.44)
 		{
 
 			eConverterMode = eBFBR_FBI_FBR;
@@ -346,7 +346,7 @@ void set_cmp_hrtm()
 		}
 
 
-		else if (V_in_ref < 0.057 * V_out_f)
+		/*else if (V_in_ref < 0.057 * V_out_f)
 		{
 			if (counter_Da_steps == 0)
 			{
@@ -382,7 +382,7 @@ void set_cmp_hrtm()
 
 			}
 
-		}
+		}*/
 		break;
 
 	case eBFBR_FBR_PSM_VDR:

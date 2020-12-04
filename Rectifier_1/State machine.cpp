@@ -59,8 +59,11 @@ void fnc_start(void)
 		start_counter = 0;
 		V_in_ref = V_in_f;
 		V_PV_oc = V_in_f;
-		machine_state = GMPPT;
-		if (V_in_ref > 0.171 * V_out_f)
+		V_PV_oc_third = V_PV_oc * 0.3333;
+		machine_state = new_GMPPT;
+		//machine_state = GMPPT;
+
+		/*if (V_in_ref > 0.171 * V_out_f)
 		{
 			eConverterMode = eAPWM_HBI_FBR;
 		}
@@ -86,12 +89,14 @@ void fnc_start(void)
 			prev_machine_state = machine_state;
 			machine_state = Transition_operation_mode;
 		}
-			
-		else if (V_in_ref > 0.085 * V_out_f)
+		else if*/	
+		if (V_in_ref > 0.057 * V_out_f)
 			eConverterMode = ePSM_FBI_FBR;
-		else if (V_in_ref > 0.057 * V_out_f)
+		
+		//else if (V_in_ref > 0.057 * V_out_f)
+		else
 			eConverterMode = eBFBR_FBI_FBR;
-		else if (V_in_ref > 0.042 * V_out_f)
+		/*else if (V_in_ref > 0.042 * V_out_f)
 			eConverterMode = ePSM_FBI_VDR;
 		else
 		{
@@ -117,7 +122,7 @@ void fnc_start(void)
 			prev_machine_state = machine_state;
 			machine_state = Transition_operation_mode;
 
-		}
+		}*/
 			
 
 	}
@@ -200,6 +205,10 @@ void fnc_transit_to_LMPPT(void)//Transitiof from GMPPT to LPPPT
 }
 
 
+
+
+
+
 //LMPPT		local maximum power point tracking
 void fnc_lmppt(void)
 {
@@ -233,14 +242,19 @@ void fnc_power_droop(void)
 }
 
 //Transition_operation_mode		stop all regulators in eBFBR_HBI_PSM_FBI and eBFBR_FBR_PSM_VDR modes
-//Waiting for transition process of input and output voltage 
+//Waiting for transition process of input voltage
 void fnc_transition_opeation_mode(void)
 {
 	static u16 transition_counter = 0;
+	
+	if (((V_in_f - V_in_ref) < 2)&& ((V_in_f - V_in_ref) > -2))
+		machine_state = prev_machine_state;
+	//Da = V_in_reg[eConverterMode].Integral_Portion_Z;
+	set_cmp_hrtm();
 
-	if (transition_counter != T_transition)
+	/*if (transition_counter != T_transition)
 	{
-		Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
+		//Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
 		set_cmp_hrtm();
 		transition_counter++;
 	}
@@ -249,7 +263,7 @@ void fnc_transition_opeation_mode(void)
 		transition_counter = 0;
 		//Return to previous state
 		machine_state = prev_machine_state;
-	}
+	}*/
 
 
 }
@@ -310,6 +324,8 @@ void  fnc_new_method_GMPPT(void)
 	static u16 P_diff_sign = 0; // if (P_out-P_out_old)>0 then P_diff_sign=0
 	static u16 GMPPT_counter = 0;
 	static u16 i = 0;
+	static u16 counter=0;
+	static u16 jump_flag = 0;
 	//static u16 GMPP_i = 0;
 	//Power droop control
 
@@ -318,36 +334,47 @@ void  fnc_new_method_GMPPT(void)
 		if (GMPPT_counter == 20)
 		{
 
+			if (P_out < 10)
+			{
+
+			}
+			else if ((V_PV_oc - V_in_f) > V_PV_oc*0.17778)
+			{
+				V_PV_oc -= V_PV_oc_third;
+				V_in_ref = V_PV_oc;
+				jump_flag = 1;
+			}
 			// if derivative of Power < 0 then P_diff_sign=1. 
-			if (((P_out - P_out_old) < -0.2) && (P_diff_sign == 0))
+			else if (((P_out - P_out_old) < -0.2) && (P_diff_sign == 0))
 			{
 				P_diff_sign = 1;
 				GMPPs_P_out[GMPP_i] = P_out_old;	//Save Global maximum power points
 				GMPPs_V_in[GMPP_i] = V_in_ref + V_ref_step_N;
-				GMPP_i++;
-				if ((V_PV_oc - V_in_f) < 5)
-				{
-					V_PV_oc -= V_PV_oc * 0.3333;
-					V_in_ref = V_PV_oc;
+				GMPPs_Da[GMPP_i] = Da;				//Safe coordinates of MPPs
+				GMPPs_eConverterMode[GMPP_i] = eConverterMode;//Safe coordinates of MPPs
 
+
+				GMPP_i++;
+				/// check if a MPP is plased correctly close V_PV_oc_third={V_PV_oc, V_PV_oc*2/3, V_PV_oc*1/3}
+				/// If correct point then jump to the next point
+				if ((V_PV_oc - V_in_f) < V_PV_oc * 0.17778)
+				{
+					V_PV_oc -= V_PV_oc_third;
+					V_in_ref = V_PV_oc;	
+					jump_flag = 1;
+					counter = 0;
 				}
 
 
-
-
-
-
-				//||((V_PV_oc * 0.6667- V_in_f)<5)|| ((V_PV_oc * 0.3333 - V_in_f) < 5))
+				
 
 
 			}
 			// if derivative of Power > 0 then P_diff_sign=0. 
-			if (((P_out - P_out_old) > 0.2) && (P_diff_sign == 1))
+			else if (((P_out - P_out_old) > 0.2) && (P_diff_sign == 1))
 			{
 				P_diff_sign = 0;
 			}
-
-
 
 
 
@@ -357,10 +384,92 @@ void  fnc_new_method_GMPPT(void)
 		}
 		else
 			GMPPT_counter++;
+		//Jumping to the next point
+		if (jump_flag == 1)
+		{///Choising a control mode according to the next MPP
+			if (V_in_ref < 0.057 * V_out_f)//
 
-		Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
-		set_cmp_hrtm();
-		V_in_ref -= V_ref_step;
+			{
+				//Calculating Da for the next control mehtods
+				// three steps for two calculation in CORDIC core
+				if (counter == 0)
+
+				{
+					P_next = V_in_ref * I_in_f;
+					Da_temp_1 = 2 * V_in_ref * n * Cr_fs * V_in_ref * n + 0.5 * P_next;
+					Da_temp_2 = Da_temp_1 / (Da_temp_1 - P_next + (V_in_ref * n * P_next) / V_out_f);
+					Da_sqrt = Da_temp_2 * Da_temp_2 - 1;
+					counter++;
+				}
+				else if (counter == 1)
+				{
+					//Da_atan = in[6];
+					counter++;
+				}
+				else
+				{
+
+
+					V_in_reg[eBFBR_FBI_FBR].flag_transition = 0;
+
+					eConverterMode = eBFBR_FBI_FBR;
+					V_in_reg[eBFBR_FBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
+					Da = V_in_reg[eBFBR_FBI_FBR].Integral_Portion_Z;
+					counter = 0;
+					jump_flag = 0;
+					//waiting transition period of input voltage 
+					machine_state = Transition_operation_mode;
+					prev_machine_state = new_GMPPT;
+
+
+				}
+
+
+
+			}
+
+			else
+			{
+				//Calculating Da for the next control mehtods
+				// three steps for two calculation in CORDIC core
+				if (counter == 0)
+				{
+
+					P_next = V_in_ref * I_in_f;
+					Da_temp_1 = V_in_ref * n * (2 * Cr_fs * (V_in_ref * n - V_out_f) + (P_next * 0.5) / V_out_f);
+					Da_temp_2 = Da_temp_1 / (Da_temp_1 - P_next);
+					Da_sqrt = Da_temp_2 * Da_temp_2 - 1;
+					counter++;
+				}
+				else if (counter == 1)
+				{
+					//Da_atan = in[6];
+					counter++;
+
+				}
+				else
+				{
+					V_in_reg[eConverterMode].flag_transition = 1;
+					V_in_reg[ePSM_FBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
+					Da = V_in_reg[ePSM_FBI_FBR].Integral_Portion_Z;
+					counter = 0;
+					eConverterMode = ePSM_FBI_FBR;
+					jump_flag = 0;
+					//waiting transition period of input voltage 
+					machine_state = Transition_operation_mode;
+					prev_machine_state = new_GMPPT;
+				}
+			}
+		}
+		else
+		{
+
+			Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
+			set_cmp_hrtm();
+			V_in_ref -= V_ref_step;
+		}
+
+
 
 
 
@@ -375,12 +484,21 @@ void  fnc_new_method_GMPPT(void)
 			if (GMPPs_P_out[GMPP_i] < GMPPs_P_out[i])
 				GMPP_i = i;
 		}
+		
+		/// Transition to the GMPPT
 		V_in_ref_LPPT = GMPPs_V_in[GMPP_i];
 		GMPPs_P_out[0] = GMPPs_P_out[GMPP_i];
+		/// Changing control mode according to the GMPP coordinate
+		eConverterMode=GMPPs_eConverterMode[GMPP_i];
+		Da = GMPPs_Da[GMPP_i];
+		V_in_reg[eConverterMode].Integral_Portion_Z = Da;
+		P_out_reg.Integral_Portion_Z = V_in_ref_LPPT;
+
 		GMPP_i = 0;
-
+		V_in_ref = V_in_ref_LPPT;
 		i = 0;
-		machine_state = Transit_to_LMPPT;
-
+	//waiting transition period of input voltage 
+		machine_state = Transition_operation_mode;
+		prev_machine_state = LMPPT;
 	}
 }

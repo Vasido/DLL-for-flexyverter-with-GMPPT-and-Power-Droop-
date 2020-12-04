@@ -34,7 +34,7 @@ float I_out = 0;
  //GMPPT
  float P_in=0;
  float P_out= 0;
- float P_out_old = 0;
+ float P_out_old = -10;
  float GMPPs_P_out[10] = { 0 };
  float GMPPs_V_in[10] = { 0 };
  u16 GMPP_i = 0;
@@ -50,7 +50,11 @@ float I_out = 0;
 
  //New GMPPT
  float V_PV_oc = 0;// open circuit of PV
+ float V_PV_oc_third = 0;// open circuit of PV
+ float P_next = 0;
 
+ float GMPPs_Da[10] = { 0 };
+ et_converter_mode GMPPs_eConverterMode[10] = { ePSM_FBI_FBR };
  ////
 
  float V_in_ref=0;
@@ -267,9 +271,9 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[16] = machine_state;
 	out[17] = machine_status;
 	out[18] = V_in_ref;
-	out[19] = P_out_old;
-	out[20] = P_out;
-	out[21] = P_lim;
+	out[19] = eConverterMode;
+	out[20] = P_next;
+	out[21] = V_PV_oc;
 	out[22] = Da;
 	if (Da_sqrt < 0)
 		Da_sqrt = 0; 

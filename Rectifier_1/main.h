@@ -142,6 +142,11 @@ extern stPI_Params P_out_reg;
 
 //New GMPPT
 extern float V_PV_oc;
+extern float V_PV_oc_third;
+extern float P_next;
+
+extern float GMPPs_Da[10];
+extern et_converter_mode GMPPs_eConverterMode[10];
 ///
 
  ///LMPPT
