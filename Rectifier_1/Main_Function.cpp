@@ -147,8 +147,8 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	if ((TIM2_CNT > 50) && (flag_INT == 1))
 	{
 		flag_INT = 0; //ńįšīń ōėąćą ļšåšūāąķč˙
-	//	TIM2_IRQHandler(in);	// Īįšąįīņźą ļšåšūāąķč˙ īņ Ņąéģåšą
-		V_in_reg[0].Integral_Portion_Z++;
+		TIM2_IRQHandler(in);	// Īįšąįīņźą ļšåšūāąķč˙ īņ Ņąéģåšą
+	
 	}
 	if (TIM2_CNT < 50)
 		flag_INT = 1;  //óńņąķīāźą ōėąćą ļšåšūāąķč˙
@@ -273,9 +273,9 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[16] = machine_state;
 	out[17] = machine_status;
 	out[18] = V_in_ref;
-	out[19] = eConverterMode;
-	out[20] = V_in_f;
-	out[21] = V_in_reg[0].Integral_Portion_Z;
+	out[19] = V_in_f;
+	out[20] = P_out;
+	out[21] = V_in_reg[ePSM_FBI_FBR].Proportional_Gain;
 	out[22] = Da;
 	if (Da_sqrt < 0)
 		Da_sqrt = 0; 
