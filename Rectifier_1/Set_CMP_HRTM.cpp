@@ -140,6 +140,7 @@ void set_cmp_hrtm()
 			{
 					V_in_reg[eConverterMode].flag_transition = 1;
 					V_in_reg[ePSM_FBI_FBR].Integral_Portion_Z = wr_Ts * SQRT;
+					Da = V_in_reg[ePSM_FBI_FBR].Integral_Portion_Z;
 					charging_Da_buck = 0.5;
 					charging_Da_boost = Da;
 					charging_Duty_cycle = 0;
@@ -187,7 +188,7 @@ void set_cmp_hrtm()
 			if(HRTIM1_TIMD.CMP4xR> T_hrtm)
 			HRTIM1_TIMD.CMP4xR = T_hrtm - T_d;
 
-			V_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * SQRT;
+	
 
 
 			//Switch Q3

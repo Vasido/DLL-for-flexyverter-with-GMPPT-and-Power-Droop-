@@ -238,7 +238,7 @@ extern transition FSM_table[8];
 #define V_ref_step_N    (float)(V_ref_step*20)
 
 //fnc fnc_transition_opeation_mode
-#define T_transition    (u16)(Charging_N_C2*4) //
+#define T_transition    (u16)(Charging_N_C2*3) //
 
 /* USER CODE END Private defines */
 
