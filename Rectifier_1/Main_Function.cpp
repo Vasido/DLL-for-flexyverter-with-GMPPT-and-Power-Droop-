@@ -38,7 +38,7 @@ float I_out = 0;
  float GMPPs_P_out[10] = { 0 };
  float GMPPs_V_in[10] = { 0 };
  u16 GMPP_i = 0;
- ///
+ 
  ///LMPPT
  float V_in_ref_LPPT = 0;
  ////
@@ -66,6 +66,7 @@ float I_out = 0;
 
  float SQRT = 0;
 
+ float temp = 0;
  stPI_Params V_in_reg[8] =
  {//	Proportional_Gain,	Integral_Gain,	Integral_Portion_Z,	Integral_H_Limit,	Integral_L_Limit,	Output_H_Limit,		Output_L_Limit	flag_transition
 	 {	4.471e-3,			7.305e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//APWM_HBI_FBR
@@ -146,7 +147,8 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	if ((TIM2_CNT > 50) && (flag_INT == 1))
 	{
 		flag_INT = 0; //ńįšīń ōėąćą ļšåšūāąķč˙
-		TIM2_IRQHandler(in);	// Īįšąįīņźą ļšåšūāąķč˙ īņ Ņąéģåšą
+	//	TIM2_IRQHandler(in);	// Īįšąįīņźą ļšåšūāąķč˙ īņ Ņąéģåšą
+		V_in_reg[0].Integral_Portion_Z++;
 	}
 	if (TIM2_CNT < 50)
 		flag_INT = 1;  //óńņąķīāźą ōėąćą ļšåšūāąķč˙
@@ -272,8 +274,8 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[17] = machine_status;
 	out[18] = V_in_ref;
 	out[19] = eConverterMode;
-	out[20] = P_next;
-	out[21] = V_PV_oc;
+	out[20] = V_in_f;
+	out[21] = V_in_reg[0].Integral_Portion_Z;
 	out[22] = Da;
 	if (Da_sqrt < 0)
 		Da_sqrt = 0; 

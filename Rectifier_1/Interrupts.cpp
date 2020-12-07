@@ -27,7 +27,6 @@ void TIM2_IRQHandler (double* in)
 	V_out_f = Filter(&V_out, &STR.V_out_fiter);
 	I_out_f = Filter(&I_out, &STR.I_out_fiter);
 	P_out = V_in_f * I_in_f;
-	
 
 	transition_handler = FSM_table[machine_state].indicate_transition_handler;
 	transition_handler();//transition specific action taken from the transaction table

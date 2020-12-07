@@ -10,10 +10,10 @@
 		f32 Input_Error;
 
 		Input_Error = *Desired_Value - *Measured_Value;
-
+	
 		Proportional_Portion = (((Params->Proportional_Gain)* Input_Error) );// / f_dis;
 
-	
+		
   
 		Integral_Portion = (Params->Integral_Gain)* Input_Error;
 		Params->Integral_Portion_Z += Integral_Portion;
@@ -30,7 +30,7 @@
   
 	
 		Output = Proportional_Portion + Params->Integral_Portion_Z;
-
+	
 		if ((Output) > (Params->Output_H_Limit))
 		{
 			Output = Params->Output_H_Limit;
@@ -46,7 +46,7 @@
 			Params->Integral_Portion_Z -= Integral_Portion;
 			Params->flag_transition = 1;
 		}
-
+	
 		return Output;
 	}
 
