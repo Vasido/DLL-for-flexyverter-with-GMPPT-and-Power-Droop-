@@ -43,7 +43,7 @@ typedef struct
 	//stPI_Params		V_in_reg;
 
 	//PI_Params		P_los;
-	s16				w_ref;
+	
 	u16				Interrupt_Number;
 
 } STRUCT;

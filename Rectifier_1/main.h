@@ -108,8 +108,8 @@ extern float Max_Da;
 extern float shifted_Da;
 extern float Min_Da;
 
-extern float Da_temp_1; // 
-extern float Da_temp_2; // 
+//extern float Da_temp_1; // 
+//extern float Da_temp_2; // 
 extern float Da_sqrt; //
 extern float Da_atan; //
 

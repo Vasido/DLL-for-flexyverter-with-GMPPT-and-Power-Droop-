@@ -12,8 +12,8 @@ float Max_Da = 0.5 - delta_Da;
 float shifted_Da = 0;
 float Min_Da = 0.05;
 
-float Da_temp_1 = 0; // 
-float Da_temp_2 = 0; //
+//float Da_temp_1 = 0; // 
+//float Da_temp_2 = 0; //
 float Da_sqrt = 0; //
 float Da_atan= 0; //
 
@@ -259,7 +259,7 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[16] = machine_state;
 	out[17] = machine_status;
 	out[18] = V_in_ref;
-	out[19] = P_out_old;
+	out[19] = eConverterMode;
 	out[20] = P_out;
 	out[21] = P_lim;
 	out[22] = Da;

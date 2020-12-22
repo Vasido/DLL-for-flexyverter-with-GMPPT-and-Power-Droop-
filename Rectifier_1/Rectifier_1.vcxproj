@@ -161,6 +161,7 @@
     <ClInclude Include="Functions.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Structs.h" />
+    <ClInclude Include="table_arccos.h" />
     <ClInclude Include="table_arcsin.h" />
     <ClInclude Include="Var_def.h" />
     <ClInclude Include="table_sin.h" />
