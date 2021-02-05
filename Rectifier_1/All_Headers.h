@@ -10,4 +10,5 @@
 #include "table_sin.h"
 #include "table_arcsin.h"
 #include "main.h"
+#include "table_arccos.h"
 #endif

@@ -275,7 +275,7 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[18] = V_in_ref;
 	out[19] = V_in_f;
 	out[20] = P_out;
-	out[21] = V_in_reg[ePSM_FBI_FBR].Proportional_Gain;
+	out[21] = eConverterMode;
 	out[22] = Da;
 	if (Da_sqrt < 0)
 		Da_sqrt = 0; 

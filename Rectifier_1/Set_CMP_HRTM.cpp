@@ -32,7 +32,7 @@ void set_cmp_hrtm()
 //		shifted_Da = 0.01;
 	switch (eConverterMode)
 	{
-
+/*
 	case eAPWM_HBI_FBR: //APWM  HBI-FBR
 	
 	// Input bridge
@@ -214,7 +214,7 @@ void set_cmp_hrtm()
 
 		break;
 
-
+		*/
 
 	case ePSM_FBI_FBR: //PSM FBI-FBR
 
@@ -233,7 +233,7 @@ void set_cmp_hrtm()
 		HRTIM1_TIMD.CMP3xR = (u32)(Da * T_hrtm + half_Thrtm);
 		HRTIM1_TIMD.CMP4xR = (u32)(Da * T_hrtm - T_d);
 		if (HRTIM1_TIMD.CMP4xR > T_hrtm)
-			HRTIM1_TIMD.CMP4xR = 0x0;///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+			HRTIM1_TIMD.CMP4xR = T_hrtm - T_d;///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
 	
 		// Output bridge
 		// Passive rectifer
@@ -384,7 +384,7 @@ void set_cmp_hrtm()
 
 		}*/
 		break;
-
+		/*
 	case eBFBR_FBR_PSM_VDR:
 
 		//Charging of capacitor C3 
@@ -569,8 +569,9 @@ void set_cmp_hrtm()
 				V_in_reg[eConverterMode].Integral_Portion_Z = 0.435;
 			}
 		}
-
+		
 		break;
+		*/
 	}
 
 }
