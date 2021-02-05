@@ -59,7 +59,7 @@ void fnc_start(void)
 		start_counter = 0;
 		V_in_ref = V_in_f;
 		V_PV_oc = V_in_f;
-		V_PV_oc_third = V_PV_oc * 0.3333;
+		V_PV_oc_third = V_PV_oc * 0.3333;// *0.3333
 		machine_state = new_GMPPT;
 		//machine_state = GMPPT;
 
@@ -247,7 +247,7 @@ void fnc_transition_opeation_mode(void)
 {
 	static u16 transition_counter = 0;
 	
-	if (((V_in_f - V_in_ref) < 0.5) && ((V_in_f - V_in_ref) > -0.5))
+	if (((V_in_f - V_in_ref) < 0.5) && ((V_in_f - V_in_ref) > -0.25))
 		transition_counter++;
 
 	if (transition_counter == 10)
@@ -348,8 +348,9 @@ void  fnc_new_method_GMPPT(void)
 			{
 
 			}
-			else if ((V_PV_oc - V_in_f) > V_PV_oc*0.17778)
+			else if (((V_PV_oc - V_in_f) > 8.5)&&(GMPP_i=!0))//V_PV_oc*0.17778
 			{
+
 				V_PV_oc -= V_PV_oc_third;
 				V_in_ref = V_PV_oc;
 				jump_flag = 1;
@@ -362,19 +363,27 @@ void  fnc_new_method_GMPPT(void)
 				GMPPs_V_in[GMPP_i] = V_in_ref + V_ref_step_N;
 				GMPPs_Da[GMPP_i] = Da;				//Safe coordinates of MPPs
 				GMPPs_eConverterMode[GMPP_i] = eConverterMode;//Safe coordinates of MPPs
-
+				if (GMPP_i == 0)
+				{
+					V_PV_oc_third = GMPPs_V_in[GMPP_i] * 0.293;
+					V_PV_oc = GMPPs_V_in[GMPP_i];
+				}
+					
 
 				GMPP_i++;
 				/// check if a MPP is plased correctly close V_PV_oc_third={V_PV_oc, V_PV_oc*2/3, V_PV_oc*1/3}
 				/// If correct point then jump to the next point
-				if ((V_PV_oc - V_in_f) < V_PV_oc * 0.17778)
-				{
+				//if (((V_PV_oc - V_in_f) < V_PV_oc * 0.17778)&& (GMPP_i = !0))
+				//{
+			
+
+
 					V_PV_oc -= V_PV_oc_third;
 					V_in_ref = V_PV_oc;	
 					jump_flag = 1;
 					counter = 0;
 					
-				}
+				//}
 
 
 				
@@ -490,7 +499,12 @@ void  fnc_new_method_GMPPT(void)
 
 	}
 	else
-	{	///Finding out of Gloval Maximum power poit
+	{	
+
+	///Writing the last of Gloval Maximum power poit
+	GMPPs_P_out[GMPP_i] = P_out_old;
+
+	///Finding out of Gloval Maximum power poit
 		GMPP_i = 0;
 		for (i = 1; i < 10; i++)
 		{
