@@ -125,7 +125,7 @@ void set_cmp_hrtm()
 		{
 			if (counter_Da_steps==0)
 			{
-				Da_temp_1 = V_in_ref * n * (2*Cr_fs * (V_in_ref * n - V_out_f) + I_out_f*0.5);
+				Da_temp_1 = V_in_ref * n * (2*Cr_fs * (V_in_ref * n - V_out_f) + I_out_f*0.5); 
 				Da_temp_2 = Da_temp_1 / (Da_temp_1 - P_out);
 				Da_sqrt = Da_temp_2* Da_temp_2-1;
 				counter_Da_steps++;

@@ -247,9 +247,19 @@ void fnc_transition_opeation_mode(void)
 {
 	static u16 transition_counter = 0;
 	
-	if (((V_in_f - V_in_ref) < 2)&& ((V_in_f - V_in_ref) > -2))
+	if (((V_in_f - V_in_ref) < 0.5) && ((V_in_f - V_in_ref) > -0.5))
+		transition_counter++;
+
+	if (transition_counter == 10)
+	{
+		P_out_old = P_out;
 		machine_state = prev_machine_state;
+		transition_counter = 0;
+
+	}
+		
 	//Da = V_in_reg[eConverterMode].Integral_Portion_Z;
+	Da = PI(&V_in_f, &V_in_ref, &V_in_reg[eConverterMode]);
 	set_cmp_hrtm();
 
 	/*if (transition_counter != T_transition)
@@ -363,6 +373,7 @@ void  fnc_new_method_GMPPT(void)
 					V_in_ref = V_PV_oc;	
 					jump_flag = 1;
 					counter = 0;
+					
 				}
 
 
@@ -420,6 +431,7 @@ void  fnc_new_method_GMPPT(void)
 					//waiting transition period of input voltage 
 					machine_state = Transition_operation_mode;
 					prev_machine_state = new_GMPPT;
+					GMPPT_counter = 0;
 
 
 				}
@@ -431,7 +443,7 @@ void  fnc_new_method_GMPPT(void)
 			else
 			{
 				//Calculating Da for the next control mehtods
-				// three steps for two calculation in CORDIC core
+				// three steps for two calculation in CORDIC core   	
 				if (counter == 0)
 				{
 
@@ -458,6 +470,7 @@ void  fnc_new_method_GMPPT(void)
 					//waiting transition period of input voltage 
 					machine_state = Transition_operation_mode;
 					prev_machine_state = new_GMPPT;
+					GMPPT_counter = 0;
 				}
 			}
 		}

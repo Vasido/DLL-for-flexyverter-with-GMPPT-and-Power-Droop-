@@ -73,7 +73,7 @@ float I_out = 0;
 	 {	4.471e-3,			7.305e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_HBI_FBR
 	 {	0,					0,				0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_HBI_PSM_FBI
 	 {	6.896e-3,			1.144e-3,		0,					Max_Da,				0,					Max_Da,				0,				0},		//PSM_FBI_FBR
-	 {	2.057e-3,			5.289e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_FBI_FBR
+	 {	10e-3,			5.289e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_FBI_FBR  2.057e-3,
 	 {	0,					0,				0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_FBR_PSM_VDR
 	 {	5.893e-3,			1.911e-3,		0,					Max_Da,				0,					Max_Da,				0,				0},		//PSM_FBI_VDR
 	 {	2.098e-3,			1.043e-3,		0,					Max_Da,				0,					Max_Da,				0,				0},		//SwBVDR_FBI_VDR
@@ -273,7 +273,7 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[16] = machine_state;
 	out[17] = machine_status;
 	out[18] = V_in_ref;
-	out[19] = V_in_f;
+	out[19] = P_out_old;
 	out[20] = P_out;
 	out[21] = eConverterMode;
 	out[22] = Da;
