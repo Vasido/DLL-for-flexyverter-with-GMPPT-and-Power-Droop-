@@ -228,13 +228,13 @@ void set_cmp_hrtm()
 	case ePSM_FBI_FBR: //PSM FBI-FBR
 
 		
-		/*// Input bridge
+		// Input bridge
 		//Switch S1
 		HRTIM1_TIMC.CMP1xR = 0x0;
-		HRTIM1_TIMC.CMP2xR = (u32)(half_Thrtm - T_d);
+		HRTIM1_TIMC.CMP2xR = (u32)(D_HPSM* T_hrtm - T_d);
 		//Switch S2
 		HRTIM1_TIMC.CMP3xR = half_Thrtm;
-		HRTIM1_TIMC.CMP4xR = (u32)(T_hrtm - T_d);*/
+		HRTIM1_TIMC.CMP4xR = (u32)(D_HPSM * T_hrtm + half_Thrtm - T_d);
 		//Switch S3
 		HRTIM1_TIMD.CMP1xR = (u32)(Da * T_hrtm);
 		HRTIM1_TIMD.CMP2xR = (u32)(Da * T_hrtm + half_Thrtm - T_d);
@@ -246,19 +246,21 @@ void set_cmp_hrtm()
 	
 		// Output bridge
 		// Passive rectifer
-		/*//Switch Q1
-		HRTIM1_TIMA.CMP1xR = 0x0;
-		HRTIM1_TIMA.CMP2xR = 0x0;
+		//Switch Q1
+		HRTIM1_TIMA.CMP1xR = half_Thrtm;
+		HRTIM1_TIMA.CMP2xR = (u32)(D_rec * T_hrtm+ half_Thrtm);
 		//Switch Q2
 		HRTIM1_TIMA.CMP3xR = 0x0;
-		HRTIM1_TIMA.CMP4xR = 0x0;
+		HRTIM1_TIMA.CMP4xR = (u32)(D_rec * T_hrtm);
 		//Switch Q3
 		HRTIM1_TIMB.CMP1xR = 0x0;
-		HRTIM1_TIMB.CMP2xR = 0x0;
+		HRTIM1_TIMB.CMP2xR = (u32)(D_rec * T_hrtm);
 		//Switch Q4
-		HRTIM1_TIMB.CMP3xR = 0;//T_hrtm + MinCmpVal;
-		HRTIM1_TIMB.CMP4xR = 0x0;*/
-
+		HRTIM1_TIMB.CMP3xR = half_Thrtm;
+		HRTIM1_TIMB.CMP4xR = (u32)(D_rec * T_hrtm+ half_Thrtm);
+		if (HRTIM1_TIMB.CMP4xR > T_hrtm)
+			HRTIM1_TIMB.CMP4xR = (u32)(T_hrtm - T_d);///////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+/*
 
 		if (V_in_ref > 0.123 * V_out_f)
 		{
@@ -308,6 +310,7 @@ void set_cmp_hrtm()
 			HRTIM1_TIMD.CMP3xR = T_hrtm;
 			HRTIM1_TIMD.CMP4xR = (u32)(half_Thrtm - T_d);
 		}
+*/
 		break;
 
 	case eBFBR_FBI_FBR: //BFBR HBI-FBR
@@ -416,8 +419,7 @@ void set_cmp_hrtm()
 			if (HRTIM1_TIMD.CMP4xR > T_hrtm)
 				HRTIM1_TIMD.CMP4xR = T_hrtm - T_d;
 
-			V_in_reg[eConverterMode].Integral_Portion_Z = wr_Ts * SQRT;
-
+			
 
 			//Switch Q3
 			HRTIM1_TIMB.CMP1xR = (u32)(charging_Da_boost * T_hrtm);

@@ -8,6 +8,7 @@
 #include "Functions.h"
 #include "Var_ref.h"
 #include "table_sin.h"
+#include "table_cos.h"
 #include "table_arccos.h"
 #include "main.h"
 #endif

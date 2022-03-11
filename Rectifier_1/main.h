@@ -143,6 +143,18 @@ extern stPI_Params P_out_reg;
 extern float V_in_ref_LPPT ;
 ////
 
+
+///////synchrounus rectifier
+
+extern float D_rec;
+extern float D_HPSM;
+extern float V_lk_max;
+extern float I_lk_sw ;
+extern float I_lk_int;
+///////////////////
+
+
+
 extern float P_lim;
 
 extern float V_in_ref;
@@ -171,7 +183,7 @@ extern status machine_status;
 extern transition_callback transition_handler;
 extern transition FSM_table[8];
 
-
+extern float temp_1;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -205,8 +217,9 @@ extern transition FSM_table[8];
 #define f_filter_cutoff_I_out	(uint32_t)(1000)		//Hz
 
 #define Cr_fs	(float)(2.34e-3) /// Cr*fs 
-#define wr_Ts	(float)(0.15) /// 1/(wr*Ts) 
+#define wr_Ts_1000_pi	(float)(2127.067) /// (wr*Ts*1000/pi) 
 
+#define _4Cr_fs	(float)(106.818) /// 1/(4*Cr*fs)
 
 #define n	12 /// turns ratio of tranformer
 

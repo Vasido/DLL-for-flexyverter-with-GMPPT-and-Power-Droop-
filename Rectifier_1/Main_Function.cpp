@@ -31,6 +31,15 @@ float I_out = 0;
 
  float V_in_old = 0;
 
+
+///////synchrounus rectifier
+
+ float D_rec = 0;
+ float D_HPSM=0;
+ float V_lk_max = 0; 
+ float I_lk_sw = 0;
+ float I_lk_int = 0;
+
  //GMPPT
  float P_in=0;
  float P_out= 0;
@@ -96,9 +105,9 @@ STRUCT STR;
 
 /////////////////////////////
 
+float temp_1=0;
 
-
-et_converter_mode eConverterMode = eAPWM_HBI_FBR;
+et_converter_mode eConverterMode = ePSM_FBI_FBR;
 states machine_state = Standby;
 states prev_machine_state = Standby; //previously 
 status machine_status = READY;
@@ -258,15 +267,15 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	//out[15] = flag_INT;
 	out[16] = machine_state;
 	out[17] = machine_status;
-	out[18] = V_in_ref;
-	out[19] = eConverterMode;
-	out[20] = P_out;
-	out[21] = P_lim;
-	out[22] = Da;
+	out[18] = V_in_f;
+	out[19] = D_rec;
+	out[20] = temp_1;
+	out[21] = I_out_f;
+	out[22] = V_lk_max;
 	if (Da_sqrt < 0)
 		Da_sqrt = 0; 
-	out[23] = Da_sqrt;
-	out[24] = Da_atan;
+	out[23] = I_lk_sw;
+	out[24] = I_lk_int;
 	
 	/*
 	out[9] = (double)STR.PI_Iq.Output;
