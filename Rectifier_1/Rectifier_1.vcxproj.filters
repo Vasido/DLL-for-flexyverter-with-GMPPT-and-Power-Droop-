@@ -43,9 +43,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="table_sin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="type_def.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -65,9 +62,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="All_Headers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="table_arcsin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="main.h">

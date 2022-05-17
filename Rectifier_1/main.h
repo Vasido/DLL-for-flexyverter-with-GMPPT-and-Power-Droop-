@@ -41,15 +41,14 @@ extern "C" {
 
  enum et_converter_mode
 {
-	
-	eAPWM_HBI_FBR,
-	eBFBR_HBI_FBR,
-    eBFBR_HBI_PSM_FBI,
-	ePSM_FBI_FBR ,
-    eBFBR_FBI_FBR,
-    eBFBR_FBR_PSM_VDR,
-	ePSM_FBI_VDR,
-    eSwBVDR_FBI_VDR
+	eBuck_HBI_FBR,
+	eBoost_HBI_FBR,
+    eBoost_HBI_Buck_FBI,
+	eBuck_FBI_FBR ,
+    eBoost_FBI_FBR,
+    eBoost_FBR_Buck_HBR,
+	eBuck_FBI_HBR,
+    eBoost_FBI_HBR
 
 } ;
 
@@ -77,10 +76,6 @@ extern "C" {
     FAULT_V_out
 };
 
-
-
-
-
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -104,14 +99,12 @@ extern unsigned int T_d; //T_d=T_hrtm*t_d*f_s  where t_d=10 ns, f_s=95 kHz
 
 extern float Da; //0.3;
 extern float delta_Da;
-extern float Max_Da;
+extern float Max_Da_Buck;
 extern float shifted_Da;
 extern float Min_Da;
 
 //extern float Da_temp_1; // 
 //extern float Da_temp_2; // 
-extern float Da_sqrt; //
-extern float Da_atan; //
 
 
 
@@ -148,11 +141,7 @@ extern float V_in_ref_LPPT ;
 
 extern float D_rec;
 extern float D_HPSM;
-extern float V_lk_max;
-extern float I_lk_sw ;
-extern float I_lk_int;
 ///////////////////
-
 
 
 extern float P_lim;
@@ -161,8 +150,6 @@ extern float V_in_ref;
 
 extern float global_temp;
 
-extern float SQRT;
-
 extern u32 ADC1ConvertedValues[2];
 extern u32 ADC2ConvertedValues[3];
 
@@ -170,7 +157,7 @@ extern u32 I_in_offset;
 extern u32 I_out_offset;
 
 extern stPI_Params V_in_reg[8];
-extern u16 counter_2;
+
 extern u16 counter_Da_steps;
 
 extern int charging_duty_cycle_step;
@@ -200,47 +187,41 @@ extern float temp_1;
 
 #define MinCmpVal 	(uint32_t)(50)				//hardware minimal compare value for the HRTIM frequency=567 Mhz
 
-
-
 #define K_Min_Da      (float)((f_HRCK_M*f_sw)/f_HRCK)
 
-#define f_interupt	(uint32_t)(100000)	//Hz
+#define f_interupt	(float)(20000)	//Hz
 
 #define U_in_adc_scale	(float)(0.0209) 	//
 #define I_in_adc_scale	(float)(0.00337)		//1/296
 #define V_out_adc_scale	(float)(0.209)	//615/100
 #define I_out_adc_scale	(float)(0.001)		//
 
-#define f_filter_cutoff_V_in	(uint32_t)(10000)	//Hz
-#define f_filter_cutoff_V_out	(uint32_t)(1000)		//Hz
-#define f_filter_cutoff_I_in	(uint32_t)(1000)		//Hz
-#define f_filter_cutoff_I_out	(uint32_t)(1000)		//Hz
-
-#define Cr_fs	(float)(2.34e-3) /// Cr*fs 
-#define wr_Ts_1000_pi	(float)(2127.067) /// (wr*Ts*1000/pi) 
-
-#define _4Cr_fs	(float)(106.818) /// 1/(4*Cr*fs)
-
+#define Cr_fs	(float)(2.498e-3) /// Cr*fs 
 #define n	12 /// turns ratio of tranformer
 
 //Charging of series capasitors
-#define Charging_N_C2	(int)(19) // amout of time period for carging C2
-#define Charging_N_C3	(int)(6) //amout of time period for carging C3
+#define Charging_N_C2	(int)(6) // amout of time period for carging C2
+#define Charging_N_C3	(int)(4) //amout of time period for carging C3
 #define un_charging_duty_cycle_step_C2	(int)(half_Thrtm/Charging_N_C2) //
 #define un_charging_duty_cycle_step_C3	(int)(half_Thrtm/Charging_N_C3) //
 
 //Power droop control
-#define Max_converter_power	(float)(300) //W
-#define Min_V_out	        (float)(320) //V
-#define Min_Normal_V_out	(float)(325) //V
-#define Normal_V_out	    (float)(350) //V
-#define Max_V_out	        (float)(380) //V
-#define Raising_power_K      (float)(Max_converter_power/(Min_Normal_V_out-Min_V_out)) //W/V
-#define Falling_power_K      (float)(Max_converter_power/(Max_V_out-Normal_V_out)) //W/V
+#define Max_converter_power	(float)(350) //W
+#define Min_V_out	        (float)(325) //V
+#define Min_Fault_V_out	    (float)(315) //V
+#define Max_Fault_V_out	    (float)(385) //V
 
-#define Max_V_in	(float)(75) //W
-#define Min_V_in    (float)(10) //V
-#define Min_V_in_fault    (float)(8) //V
+#define Min_Normal_V_out	(float)(345) //V
+#define Normal_V_out	    (float)(350) //V
+#define Max_Normal_V_out	(float)(355) //V
+
+#define Max_V_out	        (float)(375) //V
+#define Raising_power_K     (float)(Max_converter_power/(Min_Normal_V_out-Min_V_out)) //W/V
+#define Falling_power_K     (float)(Max_converter_power/(Max_V_out-Max_Normal_V_out)) //W/V
+
+#define Max_V_in	      (float)(60) //W
+#define Min_V_in           (float)(10) //V
+#define Min_V_in_fault    (float)(3) //V
 
 //fnc Start
 #define T_start	(u16)(1+(f_interupt*5)/(2*3.141592*f_filter_cutoff_V_out)) //
@@ -252,6 +233,35 @@ extern float temp_1;
 
 //fnc fnc_transition_opeation_mode
 #define T_transition    (u16)(Charging_N_C2*3) //
+
+///// Transition voltage and gains
+
+#define V_trans_Buck_HBI_Boost_HBI  (float)(51.2) // V //V_in_trans between Buck_HBI and Boost_HBI 
+#define G_trans_Buck_HBI_Boost_HBI  (float)(V_trans_Buck_HBI_Boost_HBI/Normal_V_out) //G=V_in/V_out
+
+#define V_trans_Boost_HBI_Buck_FBI  (float)(37.7) // V //V_in_trans between Boost HBI and Buck FBI 
+#define G_trans_Boost_HBI_Buck_FBI  (float)(V_trans_Boost_HBI_Buck_FBI/Normal_V_out) //G=V_in/V_out
+
+#define V_trans_Buck_FBI_Boost_FBI   (float)(26.3) // V //V_in_trans between Buck FBI and Boost FBI 
+#define G_trans_Buck_FBI_Boost_FBI   (float)(V_trans_Buck_FBI_Boost_FBI/Normal_V_out) //G=V_in/V_out
+
+#define V_trans_Boost_FBR_Buck_HBR  (float)(16.7) // V //V_in_trans between Boost FBR and Buck HBR 
+#define G_trans_Boost_FBR_Buck_HBR  (float)(V_trans_Boost_FBR_Buck_HBR/Normal_V_out) //G=V_in/V_out
+
+#define V_trans_Buck_HBR_Boost_HBR   (float)(13.3) // V //V_in_trans between Buck HBR and Boost HBR 
+#define G_trans_Buck_HBR_Boost_HBR   (float)(V_trans_Buck_HBR_Boost_HBR/Normal_V_out) //G=V_in/V_out
+
+
+
+////// Duty cycle limitation
+#define Max_Da_Boost      0.22
+#define Min_Da_Boost      0.002
+
+//#define Max_Da_Buck      0.45
+#define Min_Da_Buck      0.018
+#define Da_Dead_zone      0.05
+#define Da_hysteresis      0.02
+
 
 /* USER CODE END Private defines */
 

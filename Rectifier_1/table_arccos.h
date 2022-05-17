@@ -1006,9 +1006,6 @@ static const float arccos[] = {
 0.006708763	,
 0	
 
-
-
-
 };
 
 #endif

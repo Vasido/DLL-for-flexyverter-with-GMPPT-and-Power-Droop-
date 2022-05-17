@@ -8,15 +8,12 @@ float t_d=0.1;  // dead time, us
 
 float Da = 0; //0.3;
 float delta_Da = t_d * f_sw_M;
-float Max_Da = 0.5 - delta_Da;
+float Max_Da_Buck = 0.5 - delta_Da;
 float shifted_Da = 0;
 float Min_Da = 0.05;
 
 //float Da_temp_1 = 0; // 
 //float Da_temp_2 = 0; //
-float Da_sqrt = 0; //
-float Da_atan= 0; //
-
 
 float V_in = 0;
 float I_in = 0;
@@ -31,14 +28,10 @@ float I_out = 0;
 
  float V_in_old = 0;
 
-
 ///////synchrounus rectifier
 
  float D_rec = 0;
- float D_HPSM=0;
- float V_lk_max = 0; 
- float I_lk_sw = 0;
- float I_lk_int = 0;
+ float D_HPSM=0.5;
 
  //GMPPT
  float P_in=0;
@@ -61,18 +54,16 @@ float I_out = 0;
  int charging_duty_cycle_step=0;
  float charging_Da_buck = 0;
 
- float SQRT = 0;
-
  stPI_Params V_in_reg[8] =
  {//	Proportional_Gain,	Integral_Gain,	Integral_Portion_Z,	Integral_H_Limit,	Integral_L_Limit,	Output_H_Limit,		Output_L_Limit	flag_transition
-	 {	4.471e-3,			7.305e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//APWM_HBI_FBR
-	 {	4.471e-3,			7.305e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_HBI_FBR
-	 {	0,					0,				0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_HBI_PSM_FBI
-	 {	6.896e-3,			1.144e-3,		0,					Max_Da,				0,					Max_Da,				0,				0},		//PSM_FBI_FBR
-	 {	2.057e-3,			5.289e-4,		0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_FBI_FBR
-	 {	0,					0,				0,					Max_Da,				0,					Max_Da,				0,				0},		//BFBR_FBR_PSM_VDR
-	 {	5.893e-3,			1.911e-3,		0,					Max_Da,				0,					Max_Da,				0,				0},		//PSM_FBI_VDR
-	 {	2.098e-3,			1.043e-3,		0,					Max_Da,				0,					Max_Da,				0,				0},		//SwBVDR_FBI_VDR
+	 {	2.236e-3,			1.83e-3,		0,					Max_Da_Buck,		Min_Da_Buck,		Max_Da_Buck,		Min_Da_Buck,	0},		//APWM_HBI_FBR
+	 {	2.236e-3,			1.83e-3,		0,					Max_Da_Boost,		Min_Da_Boost,		Max_Da_Boost,		Min_Da_Boost,	0},		//BFBR_HBI_FBR
+	 {	0,					0,				0,					0.5,				0,					0.5,				0,				0},		//BFBR_HBI_PSM_FBI
+	 {	25e-3,				1.86e-3,		0,					Max_Da_Buck,		Min_Da_Buck,		Max_Da_Buck,		Min_Da_Buck,	0},		//PSM_FBI_FBR
+	 {	10.029e-3,			1.32e-3,		0,					Max_Da_Boost,		Min_Da_Boost,		Max_Da_Boost,		Min_Da_Boost,	0},		//BFBR_FBI_FBR
+	 {	0,					0,				0,					0.5,				0,					0.5,				0,				0},		//BFBR_FBR_PSM_VDR
+	 {	15.947e-3,			2.78e-3,		0,					Max_Da_Buck,		Min_Da_Buck,		Max_Da_Buck,		Min_Da_Buck,	0},		//PSM_FBI_VDR
+	 {	1.049e-3,			2.61e-3,		0,					Max_Da_Boost,		Min_Da_Boost,		Max_Da_Boost,		Min_Da_Boost,	0},		//SwBVDR_FBI_VDR
  };
 
 
@@ -83,7 +74,6 @@ float I_out = 0;
 
 
  u16 counter_Da_steps = 0;
- u16 counter_2=0;
 
 u32 ADC1ConvertedValues[2];
 u32 ADC2ConvertedValues[3];
@@ -107,7 +97,7 @@ STRUCT STR;
 
 float temp_1=0;
 
-et_converter_mode eConverterMode = ePSM_FBI_FBR;
+et_converter_mode eConverterMode = eBuck_HBI_FBR;
 states machine_state = Standby;
 states prev_machine_state = Standby; //previously 
 status machine_status = READY;
@@ -119,7 +109,7 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	TIM2_CNT = (u32)in[0];	// Ņåźółåå ēķą÷åķčå Ņąéģåšą 1
 	if (INIT < 1)
 	{
-		STR.V_out_fiter.IntegralGain = 0.0628; //f_filter 1 kHz f_interapt 100 kHz
+		STR.V_out_fiter.IntegralGain = 0.157; //f_filter 1 kHz f_interapt 100 kHz
 		STR.V_out_fiter.IntegralPortionK_1 = 350;
 		STR.V_out_fiter.OldValue = 350;
 
@@ -127,11 +117,11 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 		STR.V_in_fiter.IntegralPortionK_1 = 0;
 		STR.V_in_fiter.OldValue = 0;
 
-		STR.I_in_fiter.IntegralGain = 0.0628; //f_filter 1 kHz f_interapt 100 kHz
+		STR.I_in_fiter.IntegralGain = 0.157; //f_filter 1 kHz f_interapt 100 kHz
 		STR.I_in_fiter.IntegralPortionK_1 = 0;
 		STR.I_in_fiter.OldValue = 0;
 
-		STR.I_out_fiter.IntegralGain = 0.0628; //f_filter 1 kHz f_interapt 100 kHz
+		STR.I_out_fiter.IntegralGain = 0.157; //f_filter 1 kHz f_interapt 100 kHz
 		STR.I_out_fiter.IntegralPortionK_1 = 0;
 		STR.I_out_fiter.OldValue = 0;
 
@@ -161,44 +151,44 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 			//Input voltage protection	
 			if ((V_in_f > Min_V_in_fault) && (V_in_f < Max_V_in))
 			{
+				machine_status = RUN;
 
-				//Power droop control
-				if ((V_out_f > Min_V_out) && (V_out_f < Min_Normal_V_out))
-				{
-					machine_status = RUN;
-					P_lim = (V_out_f - Min_V_out) * Raising_power_K;
-				}
-				else if ((V_out_f >= Min_V_out) && ((V_out_f <= Normal_V_out)))
-				{
-					machine_status = RUN;
-					P_lim = Max_converter_power;
-				}
+				////Power droop control
+				//if ((V_out_f > Min_V_out) && (V_out_f < Min_Normal_V_out))
+				//{
+				//	machine_status = RUN;
+				//	P_lim = (V_out_f - Min_V_out) * Raising_power_K;
+				//}
+				//else if ((V_out_f >= Min_V_out) && ((V_out_f <= Normal_V_out)))
+				//{
+				//	machine_status = RUN;
+				//	P_lim = Max_converter_power;
+				//}
 
-				else if ((V_out_f > Normal_V_out) && ((V_out_f < Max_V_out)))
-				{
-					machine_status = RUN;
-					P_lim = Max_converter_power - (V_out_f - Normal_V_out) * Falling_power_K;
-				}
+				//else if ((V_out_f > Normal_V_out) && ((V_out_f < Max_V_out)))
+				//{
+				//	machine_status = RUN;
+				//	P_lim = Max_converter_power - (V_out_f - Normal_V_out) * Falling_power_K;
+				//}
 
-				//Output voltage protection	
-				else
-				{
-					if (machine_status == RUN)
-					{
-						machine_state = Stop_Reset;
-						machine_status = FAULT_V_out;
-					}
-				}
+				////Output voltage protection	
+				//else
+				//{
+				//	if (machine_status == RUN)
+				//	{
+				//		machine_state = Stop_Reset;
+				//		machine_status = FAULT_V_out;
+				//	}
+				//}
 
-				if (((machine_state == GMPPT) || (machine_state == LMPPT)) && (P_out > P_lim))
-				{
-					V_in_ref += V_ref_step;
-					GMPP_i = 0;
-					P_out_reg.Integral_Portion_Z = V_in_ref;
-					machine_state = Power_droop;
+				//if (((machine_state == GMPPT) || (machine_state == LMPPT)) && (P_out > P_lim))
+				//{
+				//	V_in_ref += V_ref_step;
+				//	GMPP_i = 0;
+				//	P_out_reg.Integral_Portion_Z = V_in_ref;
+				//	machine_state = Power_droop;
 
-				}
-
+				//}
 
 			}
 			else
@@ -212,19 +202,9 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 
 		}
 	}
-
-
-
-
-
-
-	
 	
 
-
-
-
-	if ((in[8] > 30)&&(HRTIM_CNT==1))
+	if ((in[5] > 30)&&(HRTIM_CNT==1))
 	{
 		HRTIM_CNT = 0;
 		// Ōóķźöč˙ čģģčņąöčč šąįīņū ŲČĢ-ģīäóė˙
@@ -255,45 +235,18 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 		out[14] = HRTIM1_TIMB.CMP3xR;
 		out[15] = HRTIM1_TIMB.CMP4xR;
 	}
-	else if (in[8] < 30)
+	else if (in[5] < 30)
 		HRTIM_CNT = 1;
 
-
-
-
-
-
-
-	//out[15] = flag_INT;
 	out[16] = machine_state;
 	out[17] = machine_status;
 	out[18] = V_in_f;
-	out[19] = D_rec;
-	out[20] = temp_1;
+	out[19] = V_in_ref;
+	out[20] = Da;
 	out[21] = I_out_f;
-	out[22] = V_lk_max;
-	if (Da_sqrt < 0)
-		Da_sqrt = 0; 
-	out[23] = I_lk_sw;
-	out[24] = I_lk_int;
-	
-	/*
-	out[9] = (double)STR.PI_Iq.Output;
-	out[10] = (double)STR.w_ref;
-	out[11] = (double)STR.Gamma.w;
-	out[12] = (double)STR.Fdq.d;
-	out[13] = (double)STR.Fdq.q;
-	out[14] = (double)STR.Fabc.phA;
-	out[15] = (double)STR.Ii_abc.phA;
-	out[16] = (double)STR.Ii_dq.d;
-	out[17] = (double)STR.Ii_dq.q;
-	out[18] = (double)STR.temp1_double;
-	out[19] = (double)STR.temp2_double;
-	out[20] = (double)STR.SDVIG;
-	out[21] = (double)STR.Gamma.SIN_GAMMA.phC;
-	out[22] = (double)STR.  PI_w.Integral_Portion_Z;
-	out[23] = (double)STR.PI_Id.Integral_Portion_Z;
-	out[24] = (double)STR.PI_Iq.Integral_Portion_Z;
-	*/
+	out[22] = 0;
+	out[23] = eConverterMode;
+	out[24] = 0;
+		
 }
 
