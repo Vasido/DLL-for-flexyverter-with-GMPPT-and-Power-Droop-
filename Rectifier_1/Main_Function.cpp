@@ -10,7 +10,7 @@ float Da = 0; //0.3;
 float delta_Da = t_d * f_sw_M;
 float Max_Da_Buck = 0.5 - delta_Da;
 float shifted_Da = 0;
-float Min_Da = 0.05;
+
 
 //float Da_temp_1 = 0; // 
 //float Da_temp_2 = 0; //
@@ -96,6 +96,7 @@ STRUCT STR;
 /////////////////////////////
 
 float temp_1=0;
+float temp_2 = 0;
 
 et_converter_mode eConverterMode = eBuck_HBI_FBR;
 states machine_state = Standby;
@@ -210,7 +211,7 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 		// Ōóķźöč˙ čģģčņąöčč šąįīņū ŲČĢ-ģīäóė˙
 		out[0] = HRTIM1_TIMC.CMP1xR;
 		out[1] = HRTIM1_TIMC.CMP2xR;
-
+		
 		//out[2] = HRTIM1_Master.MCMP1R;
 		//out[3] = HRTIM1_Master.MCMP2R;
 
@@ -244,9 +245,9 @@ void __declspec(dllexport) simuser(double t, double delt, double* in, double* ou
 	out[19] = V_in_ref;
 	out[20] = Da;
 	out[21] = I_out_f;
-	out[22] = 0;
+	out[22] = temp_1;
 	out[23] = eConverterMode;
-	out[24] = 0;
+	out[24] = temp_2;
 		
 }
 

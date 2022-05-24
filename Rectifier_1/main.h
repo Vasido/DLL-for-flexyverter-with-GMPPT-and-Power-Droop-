@@ -49,7 +49,6 @@ extern "C" {
     eBoost_FBR_Buck_HBR,
 	eBuck_FBI_HBR,
     eBoost_FBI_HBR
-
 } ;
 
 
@@ -101,7 +100,7 @@ extern float Da; //0.3;
 extern float delta_Da;
 extern float Max_Da_Buck;
 extern float shifted_Da;
-extern float Min_Da;
+
 
 //extern float Da_temp_1; // 
 //extern float Da_temp_2; // 
@@ -171,6 +170,7 @@ extern transition_callback transition_handler;
 extern transition FSM_table[8];
 
 extern float temp_1;
+extern float temp_2;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -200,7 +200,7 @@ extern float temp_1;
 #define n	12 /// turns ratio of tranformer
 
 //Charging of series capasitors
-#define Charging_N_C2	(int)(6) // amout of time period for carging C2
+#define Charging_N_C2	(int)(5) // amout of time period for carging C2
 #define Charging_N_C3	(int)(4) //amout of time period for carging C3
 #define un_charging_duty_cycle_step_C2	(int)(half_Thrtm/Charging_N_C2) //
 #define un_charging_duty_cycle_step_C3	(int)(half_Thrtm/Charging_N_C3) //
@@ -227,7 +227,7 @@ extern float temp_1;
 #define T_start	(u16)(1+(f_interupt*5)/(2*3.141592*f_filter_cutoff_V_out)) //
 
 //fnc GMPPT
-#define V_ref_freq	(float)(100) //Hz
+#define V_ref_freq	(float)(75) //Hz
 #define V_ref_step	(float)((V_ref_freq*2*3.151592)/(f_interupt)) //
 #define V_ref_step_N    (float)(V_ref_step*20)
 
@@ -248,14 +248,14 @@ extern float temp_1;
 #define V_trans_Boost_FBR_Buck_HBR  (float)(16.7) // V //V_in_trans between Boost FBR and Buck HBR 
 #define G_trans_Boost_FBR_Buck_HBR  (float)(V_trans_Boost_FBR_Buck_HBR/Normal_V_out) //G=V_in/V_out
 
-#define V_trans_Buck_HBR_Boost_HBR   (float)(13.3) // V //V_in_trans between Buck HBR and Boost HBR 
+#define V_trans_Buck_HBR_Boost_HBR   (float)(12.4) // V //V_in_trans between Buck HBR and Boost HBR 
 #define G_trans_Buck_HBR_Boost_HBR   (float)(V_trans_Buck_HBR_Boost_HBR/Normal_V_out) //G=V_in/V_out
 
 
 
 ////// Duty cycle limitation
 #define Max_Da_Boost      0.22
-#define Min_Da_Boost      0.002
+#define Min_Da_Boost      0.004
 
 //#define Max_Da_Buck      0.45
 #define Min_Da_Buck      0.018

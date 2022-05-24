@@ -58,12 +58,21 @@ void fnc_start(void)
 		if (V_in_ref > (G_trans_Buck_HBI_Boost_HBI * V_out_f + 0.5)) //V_in_trans between Buck_HBI and Boost_HBI G_trans_Buck_HBI_Boost_HBI
 		{
 			eConverterMode = eBuck_HBI_FBR;
-			//Switch S3
-			HRTIM1_TIMD.CMP1xR = 0x0;
-			HRTIM1_TIMD.CMP2xR = 0x0;
-			//Switch S4
-			HRTIM1_TIMD.CMP3xR = 0x0;
-			HRTIM1_TIMD.CMP4xR = T_hrtm + MinCmpVal;
+			////Switch S3
+			//HRTIM1_TIMD.CMP1xR = 0x0;
+			//HRTIM1_TIMD.CMP2xR = 0x0;
+			////Switch S4
+			//HRTIM1_TIMD.CMP3xR = 0x0;
+			//HRTIM1_TIMD.CMP4xR = T_hrtm + MinCmpVal;
+	
+			// Input bridge
+			//Switch S1
+			HRTIM1_TIMC.CMP1xR = 0x0;
+			HRTIM1_TIMC.CMP2xR = T_hrtm + MinCmpVal;
+			//Switch S2
+			HRTIM1_TIMC.CMP3xR = 0x0;
+			HRTIM1_TIMC.CMP4xR = 0x0;
+
 			// Output bridge
 			// Passive rectifer
 			//Switch Q1
@@ -87,15 +96,15 @@ void fnc_start(void)
 			V_in_reg[eBuck_FBI_FBR].flag_transition = 1;
 			eConverterMode = eBoost_HBI_Buck_FBI;
 			// Input bridge
-			//Switch S1
-			HRTIM1_TIMC.CMP1xR = 0x0;
-			HRTIM1_TIMC.CMP2xR = half_Thrtm - T_d;
-			//Switch S2
-			HRTIM1_TIMC.CMP3xR = half_Thrtm;
-			HRTIM1_TIMC.CMP4xR = T_hrtm - T_d;
+			//Switch S3
+			HRTIM1_TIMD.CMP1xR = half_Thrtm;
+			HRTIM1_TIMD.CMP2xR = (u32)(T_hrtm - T_d);
+			//Switch S4
+			HRTIM1_TIMD.CMP3xR = 0x0;
+			HRTIM1_TIMD.CMP4xR = half_Thrtm - T_d;
 
 			charging_duty_cycle_step = -un_charging_duty_cycle_step_C2;
-			charging_Da_buck = 0;
+			charging_Da_buck = Max_Da_Buck;
 
 			//Waiting for transion input and output voltage
 			prev_machine_state = machine_state;
@@ -151,7 +160,7 @@ void fnc_start(void)
 			HRTIM1_TIMA.CMP3xR = 0x0;
 			HRTIM1_TIMA.CMP4xR = 0x0;
 		}
-		else if (V_in_ref > (G_trans_Buck_HBR_Boost_HBR * V_out_f - 0.5))
+		else if (V_in_ref > (G_trans_Buck_HBR_Boost_HBR * V_out_f - 0.1))
 		{
 			eConverterMode = eBuck_FBI_HBR;
 			// Input bridge
@@ -163,7 +172,7 @@ void fnc_start(void)
 			HRTIM1_TIMC.CMP4xR = T_hrtm - T_d;
 			//Switch Q1
 			HRTIM1_TIMA.CMP1xR = 0x0;
-			HRTIM1_TIMA.CMP2xR = 0x0;
+			HRTIM1_TIMA.CMP2xR = T_hrtm + MinCmpVal;
 			//Switch Q2
 			HRTIM1_TIMA.CMP3xR = 0x0;
 			HRTIM1_TIMA.CMP4xR = 0x0;
@@ -172,7 +181,7 @@ void fnc_start(void)
 			HRTIM1_TIMB.CMP2xR = 0x0;
 			//Switch Q4
 			HRTIM1_TIMB.CMP3xR = 0x0;
-			HRTIM1_TIMB.CMP4xR = T_hrtm + MinCmpVal;
+			HRTIM1_TIMB.CMP4xR = 0x0;
 		}
 		else
 		{
@@ -184,21 +193,21 @@ void fnc_start(void)
 			//Switch S2
 			HRTIM1_TIMC.CMP3xR = half_Thrtm;
 			HRTIM1_TIMC.CMP4xR = (u32)(T_hrtm - T_d);
-			//Switch S3
-			HRTIM1_TIMD.CMP1xR = half_Thrtm;
-			HRTIM1_TIMD.CMP2xR = (u32)(T_hrtm - T_d);
-			//Switch S4
-			HRTIM1_TIMD.CMP3xR = T_hrtm;
-			HRTIM1_TIMD.CMP4xR = (u32)(half_Thrtm - T_d);
-			//Switch Q3
-			HRTIM1_TIMB.CMP1xR = 0x0;
-			HRTIM1_TIMB.CMP2xR = 0x0;
-			//Switch Q4
-			HRTIM1_TIMB.CMP3xR = 0x0;
-			HRTIM1_TIMB.CMP4xR = T_hrtm + MinCmpVal;
+			////Switch S3
+			//HRTIM1_TIMD.CMP1xR = half_Thrtm;
+			//HRTIM1_TIMD.CMP2xR = (u32)(T_hrtm - T_d);
+			////Switch S4
+			//HRTIM1_TIMD.CMP3xR = T_hrtm;
+			//HRTIM1_TIMD.CMP4xR = (u32)(half_Thrtm - T_d);
+			////Switch Q3
+			//HRTIM1_TIMB.CMP1xR = 0x0;
+			//HRTIM1_TIMB.CMP2xR = 0x0;
+			////Switch Q4
+			//HRTIM1_TIMB.CMP3xR = 0x0;
+			//HRTIM1_TIMB.CMP4xR = T_hrtm + MinCmpVal;
 			charging_duty_cycle_step = -un_charging_duty_cycle_step_C2;
 			charging_Da_buck = 0.5;
-
+			V_in_reg[eBoost_FBI_HBR].flag_transition = 1;
 			//Waiting for transion input and output voltage
 			prev_machine_state = machine_state;
 			machine_state = Transition_operation_mode;
@@ -216,7 +225,7 @@ void fnc_gmppt(void)
 	//static u16 GMPP_i = 0;
 	//Power droop control
 	
-		if ((V_in_ref > Min_V_in) && (GMPP_i != 10)&&(direction==0))
+		if ((V_in_ref > 36) && (GMPP_i != 10)&&(direction==0))
 		{
 			//if (GMPPT_counter == 20)
 			//{
@@ -247,7 +256,7 @@ void fnc_gmppt(void)
 
 			V_in_ref -= V_ref_step;
 		}
-		else if ((V_in_ref <= Min_V_in) && (direction == 0))
+		else if ((V_in_ref <= 36) && (direction == 0))
 		{
 			direction = 1;
 		}
